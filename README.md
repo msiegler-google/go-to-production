@@ -78,3 +78,71 @@ The application exposes the following API endpoints:
 *   **Database**: PostgreSQL
 *   **Containerization**: Docker, Docker Compose
 *   **Frontend**: HTML, CSS, JavaScript (served statically)
+
+## Pushing to Google Artifact Registry
+
+To push your application's Docker image to Google Artifact Registry, follow these steps:
+
+### 1. Prerequisites
+
+*   **Google Cloud SDK (`gcloud`):** Make sure you have the `gcloud` CLI installed and authenticated. If not, you can install it from the [Google Cloud SDK documentation](https://cloud.google.com/sdk/docs/install) and authenticate by running:
+    ```bash
+    gcloud auth login
+    gcloud config set project [YOUR_PROJECT_ID]
+    ```
+    Replace `[YOUR_PROJECT_ID]` with your Google Cloud project ID.
+
+*   **Docker:** Ensure you have Docker installed and running on your machine.
+
+### 2. Enable the Artifact Registry API
+
+You need to enable the Artifact Registry API for your project. You can do this with the following command:
+
+```bash
+gcloud services enable artifactregistry.googleapis.com
+```
+
+### 3. Create an Artifact Registry Repository
+
+Create a Docker repository in Artifact Registry to store your image. Choose a region and a name for your repository.
+
+```bash
+gcloud artifacts repositories create [YOUR_REPOSITORY_NAME] \
+    --repository-format=docker \
+    --location=[YOUR_REGION] \
+    --description="Docker repository for my Go app"
+```
+
+Replace `[YOUR_REPOSITORY_NAME]` and `[YOUR_REGION]` (e.g., `us-central1`).
+
+### 4. Authenticate Docker
+
+Configure Docker to use your Google Cloud credentials to authenticate with Artifact Registry:
+
+```bash
+gcloud auth configure-docker [YOUR_REGION]-docker.pkg.dev
+```
+
+Replace `[YOUR_REGION]` with the same region you used in the previous step.
+
+### 5. Build and Tag Your Docker Image
+
+Now, build your Docker image using the `Dockerfile` in your project. Then, tag it with the Artifact Registry path.
+
+```bash
+# Define your image name and tag
+export IMAGE_NAME="[YOUR_REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[YOUR_REPOSITORY_NAME]/todo-app-go:latest"
+
+# Build the image
+docker build -t ${IMAGE_NAME} .
+```
+
+Make sure to replace `[YOUR_REGION]`, `[YOUR_PROJECT_ID]`, and `[YOUR_REPOSITORY_NAME]` with your actual values.
+
+### 6. Push the Image to Artifact Registry
+
+Finally, push the tagged image to your Artifact Registry repository:
+
+```bash
+docker push ${IMAGE_NAME}
+```
