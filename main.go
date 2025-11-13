@@ -54,8 +54,13 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	log.Println("Server starting on port 8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Server starting on port %s...", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {

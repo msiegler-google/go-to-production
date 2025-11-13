@@ -135,6 +135,16 @@ export IMAGE_NAME="[YOUR_REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[YOUR_REPOSITO
 
 # Build the image
 docker build -t ${IMAGE_NAME} .
+
+**Note for cross-architecture builds (e.g., building on ARM for AMD64 deployment):**
+
+If you are building on a machine with a different architecture than your deployment target (e.g., an Apple Silicon Mac for a Linux/AMD64 cloud environment), you should explicitly specify the target platform during the build:
+
+```bash
+docker build --platform linux/amd64 -t ${IMAGE_NAME} .
+```
+
+This ensures the generated image is compatible with your deployment environment, preventing "exec format error" issues.
 ```
 
 Make sure to replace `[YOUR_REGION]`, `[YOUR_PROJECT_ID]`, and `[YOUR_REPOSITORY_NAME]` with your actual values.
@@ -175,6 +185,8 @@ When you create the instance, make sure to:
 
 Use the `gcloud run deploy` command to deploy your application. This command will create a new Cloud Run service or update an existing one.
 
+When deploying to Cloud Run with a Cloud SQL instance, you must provide the database connection details via the `DATABASE_URL` environment variable. The format for connecting to a Cloud SQL instance from Cloud Run is specific.
+
 ```bash
 gcloud run deploy todo-app-go \
     --image [YOUR_REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[YOUR_REPOSITORY_NAME]/todo-app-go:latest \
@@ -182,16 +194,16 @@ gcloud run deploy todo-app-go \
     --region [YOUR_REGION] \
     --allow-unauthenticated \
     --add-cloudsql-instances [YOUR_CLOUD_SQL_CONNECTION_NAME] \
-    --set-env-vars "POSTGRES_USER=[YOUR_DB_USER],POSTGRES_PASSWORD=[YOUR_DB_PASSWORD],POSTGRES_DB=[YOUR_DB_NAME]"
+    --set-env-vars "DATABASE_URL=postgres://[YOUR_DB_USER]:[YOUR_DB_PASSWORD]@/[YOUR_DB_NAME]?host=/cloudsql/[YOUR_CLOUD_SQL_CONNECTION_NAME]"
 ```
 
 Replace the following placeholders:
 *   `[YOUR_REGION]`: The region where you want to deploy your service.
 *   `[YOUR_PROJECT_ID]`: Your Google Cloud project ID.
 *   `[YOUR_REPOSITORY_NAME]`: The name of your Artifact Registry repository.
-*   `[YOUR_CLOUD_SQL_CONNECTION_NAME]`: The connection name of your Cloud SQL instance.
+*   `[YOUR_CLOUD_SQL_CONNECTION_NAME]`: The **full connection name** of your Cloud SQL instance (e.g., `your-project:your-region:your-instance`).
 *   `[YOUR_DB_USER]`: The username for your Cloud SQL database.
 *   `[YOUR_DB_PASSWORD]`: The password for your Cloud SQL database user.
 *   `[YOUR_DB_NAME]`: The name of your Cloud SQL database.
 
-After running this command, your service will be deployed to Cloud Run and you will get a URL to access it.
+This command connects your Cloud Run service to your Cloud SQL instance and securely passes the database credentials as an environment variable.
