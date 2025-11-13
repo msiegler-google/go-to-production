@@ -5,6 +5,9 @@
 # Stage 1: Build the Go application
 FROM golang:1.24-alpine AS builder
 
+ARG TARGETOS
+ARG TARGETARCH
+
 WORKDIR /app
 
 COPY go.mod ./
@@ -13,7 +16,8 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /main .
+# Use TARGETOS and TARGETARCH for cross-compilation
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -o /main .
 
 # Stage 2: Create the final image
 FROM alpine:latest
