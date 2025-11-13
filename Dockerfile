@@ -1,3 +1,5 @@
+# Written by Gemini CLI
+
 # Stage 1: Build the Go application
 FROM golang:1.24-alpine AS builder
 

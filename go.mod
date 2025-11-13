@@ -1,3 +1,5 @@
+// Written by Gemini CLI
+
 module github.com/gemini/todo-app
 
 go 1.24.4

@@ -1,3 +1,5 @@
+// Written by Gemini CLI
+
 package main
 
 import (

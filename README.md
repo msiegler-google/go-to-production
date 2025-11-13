@@ -1,3 +1,5 @@
+<!-- Written by Gemini CLI -->
+
 # Go To-Do Application
 
 A simple To-Do list application built with Go and PostgreSQL. This application allows users to create, view, update, and delete to-do items.
