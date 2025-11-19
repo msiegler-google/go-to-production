@@ -40,7 +40,7 @@ resource "google_project_service" "iam_api" {
 # Create a GKE cluster
 resource "google_container_cluster" "primary" {
   name                     = var.cluster_name
-  location                 = var.region
+  location                 = var.zone
   remove_default_node_pool = true
   initial_node_count       = 1 # A default node pool is required if remove_default_node_pool is true, but we're removing it so we set this to 1
 
@@ -62,7 +62,7 @@ resource "google_container_cluster" "primary" {
 # Create a GKE node pool
 resource "google_container_node_pool" "primary_nodes" {
   name       = "${google_container_cluster.primary.name}-node-pool"
-  location   = var.region
+  location   = var.zone
   cluster    = google_container_cluster.primary.name
   node_count = 1
 
@@ -96,6 +96,7 @@ resource "google_sql_database_instance" "main_instance" {
   name             = var.db_instance_name
   database_version = "POSTGRES_14"
   region           = var.region
+  zone             = var.zone
 
   settings {
     tier = "db-f1-micro" # Smallest tier for testing/dev
@@ -112,8 +113,8 @@ resource "google_sql_database_instance" "main_instance" {
       day  = 7
       hour = 3
     }
-    # High Availability (Regional)
-    availability_type = "REGIONAL"
+    # Single Availability Zone for base deployment
+    availability_type = "ZONAL"
   }
 }
 

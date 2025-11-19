@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app-go
+  labels:
+    app: todo-app-go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-app-go
+  template:
+    metadata:
+      labels:
+        app: todo-app-go
+    spec:
+      containers:
+      - name: todo-app-go
+        image: gcr.io/${PROJECT_ID}/todo-app-go:latest # Placeholder - will be replaced by CI/CD
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DB_HOST
+          value: "127.0.0.1" # Will be updated for Cloud SQL Proxy
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "$(DB_USER)" # Placeholder - will be fetched from Secret Manager
+        - name: DB_PASSWORD
+          value: "$(DB_PASSWORD)" # Placeholder - will be fetched from Secret Manager
+        - name: DB_NAME
+          value: "$(DB_NAME)" # Placeholder - will be fetched from Secret Manager
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
