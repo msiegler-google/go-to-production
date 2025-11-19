@@ -38,6 +38,8 @@ This document outlines identified infrastructure and dependency risks for the `t
 
 8.  **Total GCP Failure or Multi-Region Outage:** While rare, a catastrophic event could disrupt GCP services across multiple regions, or a misconfiguration could propagate globally, making the application inaccessible.
 
+9.  **CI/CD Infrastructure or Service Failure:** The current reliance on a single CI/CD provider (GitHub Actions) creates a single point of failure for the deployment pipeline. If GitHub Actions is unavailable, it may not be possible to deploy new versions of the application, even if the production infrastructure is healthy.
+
 ---
 
 ### Proposed Mitigations for Remaining Risks
@@ -99,3 +101,12 @@ This section details the proposed solutions to address the outstanding risks ide
 *   **Multi-Cloud Architecture:** Replicate the production infrastructure on AWS using services like Amazon EKS (Elastic Kubernetes Service) for container orchestration and Amazon RDS for PostgreSQL as the database. Infrastructure as Code (IaC) tools like Terraform can be used to manage deployments across both clouds.
 *   **DNS-Based Failover:** Use a DNS provider with health checking and failover capabilities (e.g., Amazon Route 53, Cloudflare DNS). Configure DNS records to point to both the GCP and AWS deployments. If the primary cloud provider (GCP) becomes unavailable, DNS can automatically redirect traffic to the secondary deployment on AWS.
 *   **Data Synchronization:** Implement a data synchronization mechanism between the GCP and AWS databases. This could involve regular backups and restores, or more advanced asynchronous replication strategies, depending on the Recovery Time Objective (RTO) and Recovery Point Objective (RPO) requirements.
+
+#### 7. Mitigating CI/CD Infrastructure Failure
+
+**Proposal:** Implement a secondary, on-demand deployment path that can be used if the primary CI/CD system is unavailable.
+
+**Details:**
+*   **Local Deployment Scripts:** Create and maintain a set of well-documented local deployment scripts that can be run from a developer's machine. These scripts would perform the same actions as the CI/CD pipeline (e.g., build, push Docker image, update Kubernetes deployment).
+*   **Break-Glass Procedure:** Define a "break-glass" procedure that outlines the steps to take in the event of a CI/CD outage. This would include who is authorized to perform a manual deployment, what approvals are needed, and how to execute the local deployment scripts.
+*   **Multi-Provider CI/CD (Advanced):** For a more advanced solution, consider mirroring the CI/CD pipeline on a different provider (e.g., GitLab CI/CD, CircleCI). This would provide a fully redundant deployment path, but would also increase complexity and maintenance overhead.
