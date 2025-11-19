@@ -96,10 +96,11 @@ resource "google_sql_database_instance" "main_instance" {
   name             = var.db_instance_name
   database_version = "POSTGRES_14"
   region           = var.region
-  zone             = var.zone
 
   settings {
     tier = "db-f1-micro" # Smallest tier for testing/dev
+    availability_type = "ZONAL"
+    zone = var.zone
     ip_configuration {
       ipv4_enabled = false
       private_network = google_compute_network.main.id
@@ -113,8 +114,6 @@ resource "google_sql_database_instance" "main_instance" {
       day  = 7
       hour = 3
     }
-    # Single Availability Zone for base deployment
-    availability_type = "ZONAL"
   }
 }
 
