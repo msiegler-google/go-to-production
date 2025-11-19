@@ -13,10 +13,12 @@
 | DDoS attacks or other security concerns | **Medium** | 🔥🔥🔥 | 💸💸💸 | 🟡 Pending | [#8.-mitigating-ddos-and-other-security-concerns](#8-mitigating-ddos-and-other-security-concerns) |
 | Zonal and Regional Failure | **Medium** | 🔥🔥🔥 | 💸💸💸 | 🟡 Pending | [#3.-mitigating-zonal-and-regional-failure](#3-mitigating-zonal-and-regional-failure) |
 | Data Loss and Durability | **Medium** | 🔥🔥🔥 | 💸💸💸 | 🟡 Pending | [#2.-mitigating-database-spof-and-data-loss/durability-issues](#2-mitigating-database-spof-and-data-lossdurability-issues) |
+| GKE Control Plane or Infrastructure Failure | **Low** | 🔥🔥🔥 | 💸💸💸 | 🟡 Pending | [#9.-mitigating-gke-control-plane-or-infrastructure-failure](#9-mitigating-gke-control-plane-or-infrastructure-failure) |
 | CI/CD Infrastructure or Service Failure | **Low** | 🔥 | 💸 | 🟡 Pending | [#7.-mitigating-ci/cd-infrastructure-failure](#7-mitigating-cicd-infrastructure-failure) |
 | Total GCP Failure or Multi-Region Outage | **Very Low** | 🔥🔥🔥🔥 | 💸💸💸💸 | 🟡 Pending | [#6.-mitigating-total-gcp-failure](#6-mitigating-total-gcp-failure) |
 
 ---
+
 
 # Risk Mitigation Plan for todo-app-go
 
@@ -61,6 +63,8 @@ This document outlines identified infrastructure and dependency risks for the `t
 9.  **CI/CD Infrastructure or Service Failure:** The current reliance on a single CI/CD provider (GitHub Actions) creates a single point of failure for the deployment pipeline. If GitHub Actions is unavailable, it may not be possible to deploy new versions of the application, even if the production infrastructure is healthy.
 
 10. **DDoS attacks or other security concerns:** The current setup has minimal protection against malicious traffic like Distributed Denial of Service (DDoS) attacks, SQL injection, or cross-site scripting (XSS). An attack could make the service unavailable or compromise user data.
+
+11. **GKE Control Plane or Infrastructure Failure:** While GKE provides a highly available control plane, a rare failure could still impact the availability of the Kubernetes API server, scheduler, or other core components, or the underlying compute infrastructure, preventing new deployments, scaling operations, or even impacting running workloads.
 
 ---
 
@@ -142,3 +146,12 @@ This section details the proposed solutions to address the outstanding risks ide
 *   **Input Validation and Sanitization:** Strengthen the application code to perform strict input validation on all user-supplied data to prevent injection attacks. Use prepared statements for all database queries (which is already being done) to prevent SQL injection.
 *   **Content Security Policy (CSP):** Implement a strict Content Security Policy to mitigate the risk of cross-site scripting (XSS) and other code injection attacks.
 *   **Regular Security Scanning:** Integrate automated security scanning tools into the CI/CD pipeline. This includes static application security testing (SAST) to find vulnerabilities in the source code and dynamic application security testing (DAST) to scan the running application for vulnerabilities.
+
+#### 9. Mitigating GKE Control Plane or Infrastructure Failure
+
+**Proposal:** Implement an alternative, simpler deployment target for critical fallback scenarios, leveraging a different compute service.
+
+**Details:**
+*   **Alternative Runtime (Cloud Run):** For critical services, deploy a redundant copy of the application to Google Cloud Run. Cloud Run offers a fully managed, serverless platform for containerized applications, abstracting away Kubernetes complexities and providing a separate failure domain from GKE's control plane.
+*   **Traffic Management and Failover:** Configure a global load balancer (e.g., Google Cloud Load Balancer) to direct traffic between the primary GKE deployment and the fallback Cloud Run service. Health checks would enable automatic routing to Cloud Run if the GKE service becomes unhealthy.
+*   **Simplicity and Cost-Effectiveness:** Cloud Run provides a simpler operational model and scales down to zero, making it a cost-effective standby solution for disaster recovery. The application would need to be designed to be stateless or capable of connecting to the shared Cloud SQL instance.
