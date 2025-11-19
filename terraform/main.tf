@@ -100,7 +100,6 @@ resource "google_sql_database_instance" "main_instance" {
   settings {
     tier = "db-f1-micro" # Smallest tier for testing/dev
     availability_type = "ZONAL"
-    zone = var.zone
     ip_configuration {
       ipv4_enabled = false
       private_network = google_compute_network.main.id
