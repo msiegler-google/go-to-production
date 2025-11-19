@@ -1,7 +1,23 @@
 # main.tf
 
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+    }
+    google-beta = {
+      source = "hashicorp/google-beta"
+    }
+  }
+}
+
 # Configure the Google Cloud provider
 provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+provider "google-beta" {
   project = var.project_id
   region  = var.region
 }
@@ -37,12 +53,35 @@ resource "google_project_service" "iam_api" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "servicenetworking_api" {
+  project = var.project_id
+  service = "servicenetworking.googleapis.com"
+  disable_on_destroy = false
+}
+
+# VPC Peering for Cloud SQL
+resource "google_compute_global_address" "private_ip_alloc" {
+  name          = "private-ip-alloc-for-sql"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.main.id
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.main.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_alloc.name]
+}
+
 # Create a GKE cluster
 resource "google_container_cluster" "primary" {
   name                     = var.cluster_name
   location                 = var.zone
   remove_default_node_pool = true
   initial_node_count       = 1 # A default node pool is required if remove_default_node_pool is true, but we're removing it so we set this to 1
+
+  depends_on = [google_project_service_identity.gce_service_account]
 
   network    = google_compute_network.main.name
   subnetwork = google_compute_subnetwork.private.name
@@ -97,6 +136,8 @@ resource "google_sql_database_instance" "main_instance" {
   name             = var.db_instance_name
   database_version = "POSTGRES_14"
   region           = var.region
+
+  depends_on = [google_service_networking_connection.private_vpc_connection]
 
   settings {
     tier = "db-f1-micro" # Smallest tier for testing/dev
