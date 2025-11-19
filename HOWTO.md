@@ -1,12 +1,30 @@
 # HOWTO: Manual Steps for `feature/gke-base-deployment`
 
-This document outlines manual steps required after running `terraform apply` for the `feature/gke-base-deployment` branch. These steps involve generating a service account key and configuring GitHub secrets and variables, which cannot be automated directly by Terraform or committed to the repository for security reasons.
+This document outlines manual steps required for the `feature/gke-base-deployment` branch.
+
+---
+
+### **Prerequisite: GCP User Permissions**
+
+Before running `terraform apply`, the Google Cloud user you are authenticated as must have sufficient permissions to create resources in the project. The simplest way to ensure this is to grant the **`Editor`** role to your user account.
+
+**This is a one-time bootstrap step that must be done manually.**
+
+You can do this via the GCP Console (IAM & Admin -> IAM) or by having a project owner run the following `gcloud` command:
+
+```bash
+# Replace your-gcp-project-id with your project ID
+# Replace your-email@example.com with the email of the user running terraform
+gcloud projects add-iam-policy-binding your-gcp-project-id \
+  --member="user:your-email@example.com" \
+  --role="roles/editor"
+```
 
 ---
 
 ### Step 1: Run `terraform apply`
 
-Execute `terraform apply` in the `terraform/` directory. This will provision the GKE cluster, Cloud SQL instance, and the `github-actions-deployer` service account with the necessary IAM roles.
+Once your user has the correct permissions, execute `terraform apply` in the `terraform/` directory. This will provision the GKE cluster, Cloud SQL instance, and the `github-actions-deployer` service account with the necessary IAM roles.
 
 ```bash
 cd terraform/
