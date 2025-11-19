@@ -68,6 +68,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
   node_config {
     machine_type = "e2-medium"
+    service_account = google_service_account.gke_node.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
@@ -106,7 +107,6 @@ resource "google_sql_database_instance" "main_instance" {
     }
     backup_configuration {
       enabled            = true
-      binary_log_enabled = true
       start_time         = "03:00"
     }
     maintenance_window {
