@@ -22,9 +22,24 @@ gcloud projects add-iam-policy-binding your-gcp-project-id \
 
 ---
 
+### **Prerequisite: Enable Default Compute Engine Service Account**
+
+The GKE cluster creation may fail if the default Compute Engine service account is disabled in your project. This account is usually named `YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com`. You can enable it with the following command:
+
+```bash
+# Replace YOUR_PROJECT_NUMBER with your actual project number
+# Replace your-gcp-project-id with your actual project ID
+gcloud iam service-accounts enable YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com \
+  --project your-gcp-project-id
+```
+
+---
+
 ### Step 1: Run `terraform apply`
 
-Once your user has the correct permissions, execute `terraform apply` in the `terraform/` directory. This will provision the GKE cluster, Cloud SQL instance, and the `github-actions-deployer` service account with the necessary IAM roles.
+Once your user has the correct permissions and the Compute Engine default service account is enabled, execute `terraform apply` in the `terraform/` directory.
+
+**Important Note on Cloud SQL:** For this initial phase, the Cloud SQL instance is configured to use a **public IP address** and allows connections from `0.0.0.0/0` (all IP addresses). This is a **security risk** and is done solely to unblock the `terraform apply` step by avoiding complex VPC Private Service Connect configuration. **This configuration must be updated in a later phase for production use.**
 
 ```bash
 cd terraform/
