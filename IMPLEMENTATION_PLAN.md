@@ -15,6 +15,10 @@ The strategy is to use a series of feature branches, where each branch represent
     3.  [x] Update the GitHub Actions CI/CD pipeline to:
         *   Build and publish the Docker image to Google Artifact Registry.
         *   Authenticate to GKE and apply the Kubernetes manifests.
+    4.  [x] Implement Database Initialization:
+        *   Create a Kubernetes Job (`k8s/db-init-job.yaml`) to initialize the schema using Cloud SQL Proxy.
+        *   Update CI/CD to handle secret substitution and job cleanup.
+        *   Document secret setup (`docs/github-secrets-setup.md`).
 *   **Risks Addressed:** This branch lays the groundwork but doesn't fully mitigate the major risks yet. It serves as a "walking skeleton" for the production environment.
 
 ---
