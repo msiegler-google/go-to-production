@@ -64,10 +64,7 @@ This branch addresses identified project risks.
 
 ### Branch Comparison (Added LOC)
 
-| Branch | IaC | Documentation | CI/CD | Application Code |
-| :--- | :--- | :--- | :--- | :--- |
-| **feature/gke-base-deployment** | 3423 | 305 | 78 | 33 |
-| **feature/risk-mitigation** | 263 | 216 | 36 | 33 |
+![Branch Comparison](branch_comparison.png)
 
 
 ## Conclusion

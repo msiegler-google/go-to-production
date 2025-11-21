@@ -80,6 +80,45 @@ def main():
     }
     
     print(json.dumps(report, indent=2))
+    
+    generate_chart(report)
+
+def generate_chart(report):
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+        
+        branches = list(report['branches'].keys())
+        categories = sorted(list({k for b in report['branches'].values() for k in b.keys()}))
+        
+        if not categories:
+            print("No data to plot.")
+            return
+
+        x = np.arange(len(branches))
+        width = 0.8 / len(categories)
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        for i, cat in enumerate(categories):
+            vals = [report['branches'][b].get(cat, 0) for b in branches]
+            offset = width * i
+            rects = ax.bar(x + offset, vals, width, label=cat)
+            
+        ax.set_ylabel('Added Lines of Code')
+        ax.set_title('Code Additions by Branch and Category')
+        ax.set_xticks(x + width * (len(categories) - 1) / 2)
+        ax.set_xticklabels(branches, rotation=15, ha='right')
+        ax.legend()
+        
+        plt.tight_layout()
+        plt.savefig('branch_comparison.png')
+        print("Chart saved to branch_comparison.png")
+        
+    except ImportError:
+        print("matplotlib not found, skipping chart generation")
+    except Exception as e:
+        print(f"Error generating chart: {e}")
 
 if __name__ == "__main__":
     main()
