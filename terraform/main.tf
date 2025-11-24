@@ -57,6 +57,18 @@ resource "google_project_service" "logging_api" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "secretmanager_api" {
+  project = var.project_id
+  service = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "iamcredentials_api" {
+  project = var.project_id
+  service = "iamcredentials.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Create a GKE cluster
 resource "google_container_cluster" "primary" {
   name                     = var.cluster_name
@@ -92,6 +104,10 @@ resource "google_container_cluster" "primary" {
     client_certificate_config {
       issue_client_certificate = false
     }
+  }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
   }
 }
 

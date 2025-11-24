@@ -5,17 +5,18 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog" // Import slog
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"   // Added for Secret Manager
+	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb" // Added for Secret Manager
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -53,52 +54,7 @@ func main() {
 
 	slog.Info("Logger initialized")
 
-	var err error
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		slog.Error("DATABASE_URL environment variable not set")
-		os.Exit(1)
-	}
-
-	// Log the database URL for debugging, but without the password.
-	parsedURL, err := url.Parse(dbURL)
-	if err != nil {
-		slog.Error("Could not parse DATABASE_URL", "error", err)
-		os.Exit(1)
-	}
-
-	safeURL := parsedURL.Redacted()
-	slog.Info("Connecting to database", "url", safeURL)
-
-	// If using a Cloud SQL Unix socket, check if the directory exists.
-	if host := parsedURL.Query().Get("host"); strings.HasPrefix(host, "/cloudsql/") {
-		if _, err := os.Stat(host); os.IsNotExist(err) {
-			slog.Info("Cloud SQL socket directory not found", "path", host)
-			// Log the contents of the /cloudsql directory for debugging.
-			files, _ := os.ReadDir("/cloudsql")
-			slog.Info("Contents of /cloudsql:", "files", files)
-		}
-	}
-
-	slog.Info("Attempting to connect to database", "attempts", 5)
-	for i := 0; i < 5; i++ {
-		slog.Info("Opening database connection", "attempt", i+1)
-		db, err = sql.Open("postgres", dbURL)
-		if err == nil {
-			slog.Info("Pinging database", "attempt", i+1)
-			if err = db.Ping(); err == nil {
-				slog.Info("Successfully connected to database")
-				break
-			}
-		}
-		slog.Warn("Could not connect to database, retrying in 2 seconds...", "error", err, "attempt", i+1)
-		time.Sleep(2 * time.Second)
-	}
-
-	if err != nil {
-		slog.Error("Could not connect to the database after several retries", "error", err)
-		os.Exit(1)
-	}
+	initDB() // Call the new initDB function
 	defer db.Close()
 
 	http.HandleFunc("/", serveIndex)
@@ -121,6 +77,72 @@ func main() {
 	slog.Info("Server starting", "port", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		slog.Error("Server stopped unexpectedly", "error", err)
+		os.Exit(1)
+	}
+}
+
+func initDB() {
+	var err error
+
+	// Fetch password from Secret Manager
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		slog.Error("failed to setup secretmanager client", "error", err)
+		os.Exit(1)
+	}
+	defer client.Close()
+
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	if projectID == "" {
+		slog.Error("GOOGLE_CLOUD_PROJECT env var not set")
+		os.Exit(1)
+	}
+
+	// Build the secret name
+	// Format: projects/{project}/secrets/{secret}/versions/{version}
+	name := fmt.Sprintf("projects/%s/secrets/db-password/versions/latest", projectID)
+
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: name,
+	}
+
+	result, err := client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		slog.Error("failed to access secret version", "error", err)
+		os.Exit(1)
+	}
+
+	password := string(result.Payload.Data)
+
+	dbUser := os.Getenv("DB_USER")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, password, dbHost, dbPort, dbName)
+
+	// Log the connection string without password for debugging
+	safeConnStr := fmt.Sprintf("postgres://%s:xxxxx@%s:%s/%s?sslmode=disable", dbUser, dbHost, dbPort, dbName)
+	slog.Info("Connecting to database", "url", safeConnStr)
+
+	slog.Info("Attempting to connect to database", "attempts", 5)
+	for i := 0; i < 5; i++ {
+		slog.Info("Opening database connection", "attempt", i+1)
+		db, err = sql.Open("postgres", connStr)
+		if err == nil {
+			slog.Info("Pinging database", "attempt", i+1)
+			if err = db.Ping(); err == nil {
+				slog.Info("Successfully connected to database")
+				break
+			}
+		}
+		slog.Warn("Could not connect to database, retrying in 2 seconds...", "error", err, "attempt", i+1)
+		time.Sleep(2 * time.Second)
+	}
+
+	if err != nil {
+		slog.Error("Could not connect to the database after several retries", "error", err)
 		os.Exit(1)
 	}
 }

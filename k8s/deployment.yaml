@@ -14,9 +14,10 @@ spec:
       labels:
         app: todo-app-go
     spec:
+      serviceAccountName: todo-app-sa
       containers:
       - name: todo-app-go
-        image: "us-central1-docker.pkg.dev/smcghee-todo-p15n-38a6/todo-app-go/todo-app-go:f4e9863fd10494be3629e83e6434b7586dad9964"
+        image: "us-central1-docker.pkg.dev/smcghee-todo-p15n-38a6/todo-app-go/todo-app-go:secure-v2"
         resources:
           requests:
             cpu: "100m"
@@ -32,22 +33,12 @@ spec:
         - name: DB_PORT
           value: "5432"
         - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: db-credentials
-              key: username
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-credentials
-              key: password
+          value: "todoappuser" # Hardcoded for now, or fetch from SM if needed
         - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: db-credentials
-              key: dbname
-        - name: DATABASE_URL
-          value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
+          value: "todoapp_db"
+        # DB_PASSWORD will be fetched from Secret Manager by the app
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "smcghee-todo-p15n-38a6"
         livenessProbe:
           httpGet:
             path: /healthz
