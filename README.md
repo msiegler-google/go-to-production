@@ -78,6 +78,13 @@ The application exposes the following API endpoints:
 *   **Database**: PostgreSQL
 *   **Containerization**: Docker, Docker Compose
 *   **Frontend**: HTML, CSS, JavaScript (served statically)
+*   **Cloud**: Google Cloud Platform (GKE, Cloud SQL, Artifact Registry)
+*   **Authentication**: Workload Identity, Cloud SQL IAM Authentication
+
+## Documentation
+
+- **[Cloud SQL IAM Authentication](docs/CLOUD_SQL_IAM_AUTH.md)** - Complete guide to IAM authentication setup
+- **[Workload Identity Setup](docs/WORKLOAD_IDENTITY.md)** - How to configure Workload Identity for GKE
 
 ## Pushing to Google Artifact Registry
 

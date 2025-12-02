@@ -127,6 +127,9 @@ resource "google_container_node_pool" "primary_nodes" {
     metadata = {
       disable-legacy-endpoints = "true"
     }
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
   }
 }
 
@@ -184,6 +187,13 @@ resource "google_sql_user" "users" {
   name     = var.db_user
   instance = google_sql_database_instance.main_instance.name
   password = var.db_password
+}
+
+# Create an IAM user for the database
+resource "google_sql_user" "iam_user" {
+  name     = replace(google_service_account.todo_app_sa.email, ".gserviceaccount.com", "")
+  instance = google_sql_database_instance.main_instance.name
+  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
 }
 
 # Create Artifact Registry Repository

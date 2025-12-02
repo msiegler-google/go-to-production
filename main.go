@@ -82,15 +82,16 @@ func initDB() {
 	var err error
 
 	// Use Cloud SQL IAM authentication
-	// The username is the service account email
+	// The username is the service account email without the .gserviceaccount.com suffix
+	// This must match the user created in Cloud SQL
 	dbUser := "todo-app-sa@smcghee-todo-p15n-38a6.iam"
 	dbName := os.Getenv("DB_NAME")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 
-	// For IAM authentication, no password is needed
+	// For IAM authentication, a password is required by the driver but ignored by the proxy
 	// The Cloud SQL Proxy handles authentication via Workload Identity
-	connStr := fmt.Sprintf("postgres://%s@%s:%s/%s?sslmode=disable", dbUser, dbHost, dbPort, dbName)
+	connStr := fmt.Sprintf("postgres://%s:dummy-password@%s:%s/%s?sslmode=disable", dbUser, dbHost, dbPort, dbName)
 
 	// Log the connection string (safe since no password)
 	slog.Info("Connecting to database with IAM auth", "url", connStr)
