@@ -25,3 +25,7 @@ output "github_actions_deployer_email" {
   description = "The email address of the service account for GitHub Actions"
   value       = google_service_account.github_actions_deployer.email
 }
+output "cloudsql_replica_connection_name" {
+  description = "The connection name of the Cloud SQL Read Replica"
+  value       = google_sql_database_instance.read_replica.connection_name
+}

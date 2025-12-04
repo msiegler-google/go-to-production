@@ -217,3 +217,20 @@ resource "google_artifact_registry_repository" "my-repo" {
   format        = "DOCKER"
 }
 
+# Create a Read Replica
+resource "google_sql_database_instance" "read_replica" {
+  name                 = "${var.db_instance_name}-replica"
+  master_instance_name = google_sql_database_instance.main_instance.name
+  region               = var.region
+  database_version     = "POSTGRES_14"
+
+  settings {
+    tier = "db-custom-1-3840"
+    ip_configuration {
+      ipv4_enabled = true
+    }
+  }
+  replica_configuration {
+    failover_target = false
+  }
+}
