@@ -10,40 +10,56 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
       tiles = [
         # ===== ROW 1: SLO STATUS =====
         {
-          width  = 6
-          height = 4
+          width  = 12
+          height = 2
           xPos   = 0
           yPos   = 0
           widget = {
-            title = "Availability SLO (99.9%)"
-            scorecard = {
-              timeSeriesQuery = {
-                timeSeriesFilter = {
-                  filter = "select_slo_health(\"${google_monitoring_slo.availability.id}\")"
-                }
-              }
-              sparkChartView = {
-                sparkChartType = "SPARK_LINE"
-              }
+            title = "SLO Overview"
+            text = {
+              content = "**Availability SLO**: 99.9% over 28 days | **Latency SLO**: 95% < 500ms\\n\\nMonitor burn rate alerts for SLO violations. Fast burn (10x) requires immediate action. Slow burn (2x) requires investigation."
+              format = "MARKDOWN"
             }
           }
         },
         {
-          width  = 6
+          width  = 12
           height = 4
-          xPos   = 6
-          yPos   = 0
+          xPos   = 0
+          yPos   = 2
           widget = {
-            title = "Error Budget Remaining"
-            scorecard = {
-              timeSeriesQuery = {
-                timeSeriesFilter = {
-                  filter = "select_slo_budget(\"${google_monitoring_slo.availability.id}\")"
+            title = "SLO Burn Rate (1 hour window)"
+            xyChart = {
+              dataSets = [
+                {
+                  timeSeriesQuery = {
+                    timeSeriesFilter = {
+                      filter = "select_slo_burn_rate(\"${google_monitoring_slo.availability.id}\", 3600s)"
+                      aggregation = {
+                        alignmentPeriod  = "60s"
+                        perSeriesAligner = "ALIGN_MEAN"
+                      }
+                    }
+                  }
+                  plotType   = "LINE"
+                  targetAxis = "Y1"
                 }
+              ]
+              yAxis = {
+                label = "Burn Rate"
+                scale = "LINEAR"
               }
-              sparkChartView = {
-                sparkChartType = "SPARK_LINE"
-              }
+              thresholds = [
+                {
+                  value = 1.0
+                },
+                {
+                  value = 2.0
+                },
+                {
+                  value = 10.0
+                }
+              ]
             }
           }
         },
@@ -53,7 +69,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 12
           height = 4
           xPos   = 0
-          yPos   = 4
+          yPos   = 6
           widget = {
             title = "Request Rate (req/s)"
             xyChart = {
@@ -90,7 +106,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 6
           height = 4
           xPos   = 0
-          yPos   = 8
+          yPos   = 10
           widget = {
             title = "Error Rate (5xx responses)"
             xyChart = {
@@ -130,7 +146,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 6
           height = 4
           xPos   = 6
-          yPos   = 8
+          yPos   = 10
           widget = {
             title = "Request Latency (Average)"
             xyChart = {
@@ -172,7 +188,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 4
           height = 4
           xPos   = 0
-          yPos   = 12
+          yPos   = 14
           widget = {
             title = "Active Pods"
             scorecard = {
@@ -200,7 +216,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 4
           height = 4
           xPos   = 4
-          yPos   = 12
+          yPos   = 14
           widget = {
             title = "Cloud SQL - CPU Utilization"
             xyChart = {
@@ -243,7 +259,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 4
           height = 4
           xPos   = 8
-          yPos   = 12
+          yPos   = 14
           widget = {
             title = "Cloud SQL - Active Connections"
             xyChart = {
@@ -280,7 +296,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 6
           height = 4
           xPos   = 0
-          yPos   = 16
+          yPos   = 18
           widget = {
             title = "GKE Node CPU Utilization"
             xyChart = {
@@ -323,7 +339,7 @@ resource "google_monitoring_dashboard" "todo_app_overview" {
           width  = 6
           height = 4
           xPos   = 6
-          yPos   = 16
+          yPos   = 18
           widget = {
             title = "GKE Node Memory Utilization"
             xyChart = {
