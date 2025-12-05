@@ -31,6 +31,8 @@ spec:
                 task TEXT NOT NULL,
                 completed BOOLEAN DEFAULT FALSE
             );
+            GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "todo-app-sa@smcghee-todo-p15n-38a6.iam";
+            GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "todo-app-sa@smcghee-todo-p15n-38a6.iam";
             EOF
             echo "Database initialization complete!"
             echo "Terminating sidecar..."

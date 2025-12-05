@@ -52,3 +52,40 @@ resource "google_project_iam_member" "gke_node_sql_client" {
   role    = "roles/cloudsql.client"
   member  = "serviceAccount:${google_service_account.gke_node.email}"
 }
+
+# --- Workload Identity Configuration ---
+
+# Service Account for Application (Workload Identity)
+resource "google_service_account" "todo_app_sa" {
+  account_id   = "todo-app-sa"
+  display_name = "Todo App Service Account"
+  project      = var.project_id
+}
+
+# Grant Secret Accessor role to the Application Service Account
+resource "google_project_iam_member" "secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.todo_app_sa.email}"
+}
+
+# Grant Cloud SQL Client role to the Application Service Account (for Auth Proxy)
+resource "google_project_iam_member" "sql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.todo_app_sa.email}"
+}
+
+# Grant Cloud SQL Instance User role for IAM authentication
+resource "google_project_iam_member" "sql_instance_user" {
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "serviceAccount:${google_service_account.todo_app_sa.email}"
+}
+
+# Bind the Kubernetes Service Account to the Google Service Account
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  service_account_id = google_service_account.todo_app_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/todo-app-sa]"
+}

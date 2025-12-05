@@ -10,10 +10,8 @@ import (
 	"fmt"
 	"log/slog" // Import slog
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -53,52 +51,7 @@ func main() {
 
 	slog.Info("Logger initialized")
 
-	var err error
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		slog.Error("DATABASE_URL environment variable not set")
-		os.Exit(1)
-	}
-
-	// Log the database URL for debugging, but without the password.
-	parsedURL, err := url.Parse(dbURL)
-	if err != nil {
-		slog.Error("Could not parse DATABASE_URL", "error", err)
-		os.Exit(1)
-	}
-
-	safeURL := parsedURL.Redacted()
-	slog.Info("Connecting to database", "url", safeURL)
-
-	// If using a Cloud SQL Unix socket, check if the directory exists.
-	if host := parsedURL.Query().Get("host"); strings.HasPrefix(host, "/cloudsql/") {
-		if _, err := os.Stat(host); os.IsNotExist(err) {
-			slog.Info("Cloud SQL socket directory not found", "path", host)
-			// Log the contents of the /cloudsql directory for debugging.
-			files, _ := os.ReadDir("/cloudsql")
-			slog.Info("Contents of /cloudsql:", "files", files)
-		}
-	}
-
-	slog.Info("Attempting to connect to database", "attempts", 5)
-	for i := 0; i < 5; i++ {
-		slog.Info("Opening database connection", "attempt", i+1)
-		db, err = sql.Open("postgres", dbURL)
-		if err == nil {
-			slog.Info("Pinging database", "attempt", i+1)
-			if err = db.Ping(); err == nil {
-				slog.Info("Successfully connected to database")
-				break
-			}
-		}
-		slog.Warn("Could not connect to database, retrying in 2 seconds...", "error", err, "attempt", i+1)
-		time.Sleep(2 * time.Second)
-	}
-
-	if err != nil {
-		slog.Error("Could not connect to the database after several retries", "error", err)
-		os.Exit(1)
-	}
+	initDB() // Call the new initDB function
 	defer db.Close()
 
 	http.HandleFunc("/", serveIndex)
@@ -121,6 +74,45 @@ func main() {
 	slog.Info("Server starting", "port", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		slog.Error("Server stopped unexpectedly", "error", err)
+		os.Exit(1)
+	}
+}
+
+func initDB() {
+	var err error
+
+	// Use Cloud SQL IAM authentication
+	// The username is the service account email without the .gserviceaccount.com suffix
+	// This must match the user created in Cloud SQL
+	dbUser := "todo-app-sa@smcghee-todo-p15n-38a6.iam"
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+
+	// For IAM authentication, a password is required by the driver but ignored by the proxy
+	// The Cloud SQL Proxy handles authentication via Workload Identity
+	connStr := fmt.Sprintf("postgres://%s:dummy-password@%s:%s/%s?sslmode=disable", dbUser, dbHost, dbPort, dbName)
+
+	// Log the connection string (safe since no password)
+	slog.Info("Connecting to database with IAM auth", "url", connStr)
+
+	slog.Info("Attempting to connect to database", "attempts", 5)
+	for i := 0; i < 5; i++ {
+		slog.Info("Opening database connection", "attempt", i+1)
+		db, err = sql.Open("postgres", connStr)
+		if err == nil {
+			slog.Info("Pinging database", "attempt", i+1)
+			if err = db.Ping(); err == nil {
+				slog.Info("Successfully connected to database")
+				break
+			}
+		}
+		slog.Warn("Could not connect to database, retrying in 2 seconds...", "error", err, "attempt", i+1)
+		time.Sleep(2 * time.Second)
+	}
+
+	if err != nil {
+		slog.Error("Could not connect to the database after several retries", "error", err)
 		os.Exit(1)
 	}
 }

@@ -57,6 +57,18 @@ resource "google_project_service" "logging_api" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "secretmanager_api" {
+  project = var.project_id
+  service = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "iamcredentials_api" {
+  project = var.project_id
+  service = "iamcredentials.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Create a GKE cluster
 resource "google_container_cluster" "primary" {
   name                     = var.cluster_name
@@ -93,6 +105,10 @@ resource "google_container_cluster" "primary" {
       issue_client_certificate = false
     }
   }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
 }
 
 # Create a GKE node pool
@@ -110,6 +126,9 @@ resource "google_container_node_pool" "primary_nodes" {
     ]
     metadata = {
       disable-legacy-endpoints = "true"
+    }
+    workload_metadata_config {
+      mode = "GKE_METADATA"
     }
   }
 }
@@ -144,6 +163,10 @@ resource "google_sql_database_instance" "main_instance" {
       enabled            = true
       start_time         = "03:00"
     }
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
     maintenance_window {
       day  = 7
       hour = 3
@@ -164,6 +187,13 @@ resource "google_sql_user" "users" {
   name     = var.db_user
   instance = google_sql_database_instance.main_instance.name
   password = var.db_password
+}
+
+# Create an IAM user for the database
+resource "google_sql_user" "iam_user" {
+  name     = replace(google_service_account.todo_app_sa.email, ".gserviceaccount.com", "")
+  instance = google_sql_database_instance.main_instance.name
+  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
 }
 
 # Create Artifact Registry Repository

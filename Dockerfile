@@ -17,7 +17,7 @@ RUN go mod download
 COPY . .
 
 # Use TARGETOS and TARGETARCH for cross-compilation
-RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -o /main .
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -o /main .
 
 # Stage 2: Create the final image
 FROM alpine:latest
