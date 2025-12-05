@@ -18,6 +18,14 @@ You can checkout the specific **Git Tag** for each milestone to see the exact st
 
 ## Milestones
 
+### 0. Baseline Application (Local Development)
+**Tag:** `baseline`
+**Source:** Initial Commit
+**Description:**
+- **App:** Simple Go HTTP server + PostgreSQL.
+- **Infrastructure:** Docker Compose for local development.
+- **Docs:** [Milestone 0: Baseline Application](docs/00_BASELINE.md)
+
 ### 1. Risk Analysis & Planning
 **Tag:** `milestone-risk-analysis`
 **Source:** Branch `1-risk-analysis`

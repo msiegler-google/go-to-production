@@ -36,52 +36,11 @@ This repository uses **Git Tags** to mark specific points in the productionizati
 
 ---
 
-## Baseline Application (Local Development)
+## Baseline Application
 
-If you want to run the simple, local version of the app (without any cloud dependencies), you **must** check out the `baseline` tag. The `main` branch contains cloud-specific code (Secret Manager, etc.) that will not run locally without GCP credentials.
+If you want to run the simple, local version of the app (without any cloud dependencies), please refer to **[Milestone 0: Baseline Application](docs/00_BASELINE.md)**.
 
-### 1. Checkout the Baseline
-```bash
-git checkout tags/baseline
-```
-
-### 2. Create a `.env` file
-Create a file named `.env` in the root directory:
-```
-POSTGRES_USER=user
-POSTGRES_PASSWORD=password
-POSTGRES_DB=todoapp_db
-DATABASE_URL=postgres://user:password@db:5432/todoapp_db?sslmode=disable
-```
-
-### 3. Build and Run with Docker Compose
-```bash
-docker-compose up --build
-```
-The app will be available at [http://localhost:8080](http://localhost:8080).
-
-This command will:
-*   Build the Go application Docker image.
-*   Start a PostgreSQL database container.
-*   Initialize the database with the `init.sql` script, creating the `todos` table.
-*   Start the Go application, connecting it to the PostgreSQL database.
-
-### 4. Access the Application
-
-Once the services are up and running, you can access the application in your web browser at:
-
-[http://localhost:8080](http://localhost:8080)
-
-## API Endpoints
-
-The application exposes the following API endpoints:
-
-*   **`GET /todos`**: Retrieve all to-do items.
-*   **`POST /todos`**: Add a new to-do item.
-    *   Request Body: `{"task": "New task description"}`
-*   **`PUT /todos/{id}`**: Update a to-do item (e.g., mark as completed).
-    *   Request Body: `{"completed": true}`
-*   **`DELETE /todos/{id}`**: Delete a to-do item.
+The `main` branch contains cloud-specific code that will not run locally without GCP credentials.
 
 ## Technologies Used
 
@@ -96,6 +55,7 @@ The application exposes the following API endpoints:
 
 ## Documentation
 
+- **[Milestone 0: Baseline Application](docs/00_BASELINE.md)**
 - **[Milestone 1: Risk Analysis](docs/01_RISK_ANALYSIS.md)**
 - **[Milestone 2: Base Infrastructure](docs/02_BASE_INFRASTRUCTURE.md)**
 - **[Milestone 3: HA & Scalability](docs/03_HA_SCALABILITY.md)**
