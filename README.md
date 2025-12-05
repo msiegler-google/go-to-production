@@ -1,4 +1,4 @@
-# Go To-Do Application: A Journey to Production
+# go-to-production: A Cloud-Native Journey
 
 > **Note:** This is a "toy" application. The code itself (a simple To-Do list) is intentionally basic. The real value of this repository is the **infrastructure, security, and observability** wrapper around it. It demonstrates how to take a simple app and make it production-ready on Google Cloud.
 
@@ -13,66 +13,52 @@ This repository serves as a reference implementation for modern cloud-native pra
 *   **Observability**: Prometheus metrics, Cloud Trace, and SLO monitoring.
 *   **Resilience**: Circuit breakers, retries, and regional high availability.
 
-## The Journey to Production
+## Navigating the Journey
 
-We have documented every step of the "productionization" process. You can follow along by checking out the specific git tags associated with each milestone.
+This repository uses **Git Tags** to mark specific points in the productionization journey. You can check out any tag to see the code exactly as it was at that stage.
 
-👉 **[Read the Full Production Guide](PRODUCTION_JOURNEY.md)**
+**How to use tags:**
 
-This guide walks you through:
-1.  **Risk Analysis**: Identifying SPOFs and security gaps.
-2.  **Base Infrastructure**: Getting a "walking skeleton" on GKE.
-3.  **High Availability**: Regional clusters and HA databases.
-4.  **Security Hardening**: WAF, IAM Auth, and Secret Manager.
-5.  **Advanced Deployment**: Canary releases with Cloud Deploy.
-6.  **Observability**: Metrics, Tracing, and SLOs.
+1.  **List all tags:**
+    ```bash
+    git tag -l
+    ```
+2.  **Checkout a specific milestone:**
+    ```bash
+    git checkout tags/milestone-base-infra
+    ```
+3.  **Return to the latest version:**
+    ```bash
+    git checkout main
+    ```
+
+👉 **[Read the Full Production Guide](PRODUCTION_JOURNEY.md)** for a detailed walkthrough of each milestone.
 
 ---
 
-## Baseline Application
+## Baseline Application (Local Development)
 
-If you just want to run the app locally or deploy a simple version to Cloud Run, follow the steps below.
+If you want to run the simple, local version of the app (without any cloud dependencies), you **must** check out the `baseline` tag. The `main` branch contains cloud-specific code (Secret Manager, etc.) that will not run locally without GCP credentials.
 
-### Features
-*   Create, View, Update, Delete To-Do items.
-*   Persistent storage in PostgreSQL.
-*   Simple HTML/JS frontend.
-
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-*   [Docker](https://docs.docker.com/get-docker/)
-*   [Docker Compose](https://docs.docker.com/compose/install/)
-
-## Getting Started
-
-Follow these steps to get the application up and running on your local machine.
-
-### 1. Clone the Repository
-
+### 1. Checkout the Baseline
 ```bash
-git clone https://github.com/gemini/todo-app.git
-cd todo-app
+git checkout tags/baseline
 ```
 
 ### 2. Create a `.env` file
-
-Create a file named `.env` in the root directory of the project and add the following content. Replace `your_password` with a strong password for your PostgreSQL database.
-
+Create a file named `.env` in the root directory:
 ```
 POSTGRES_USER=user
-POSTGRES_PASSWORD=your_password
+POSTGRES_PASSWORD=password
 POSTGRES_DB=todoapp_db
+DATABASE_URL=postgres://user:password@db:5432/todoapp_db?sslmode=disable
 ```
 
 ### 3. Build and Run with Docker Compose
-
-Navigate to the project root directory and run the following command to build the Docker images and start the services:
-
 ```bash
 docker-compose up --build
 ```
+The app will be available at [http://localhost:8080](http://localhost:8080).
 
 This command will:
 *   Build the Go application Docker image.
