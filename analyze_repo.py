@@ -4,11 +4,11 @@ import json
 
 CATEGORIES = {
     "Application Code": ["*.go", "templates/", "static/"],
-    "IaC": ["terraform/", "k8s/", "Dockerfile", "docker-compose.yml"],
+    "IaC": ["terraform/", "k8s/", "Dockerfile", "docker-compose.yml", "skaffold.yaml", "clouddeploy.yaml"],
     "Database": ["init.sql", "migrations/"],
     "CI/CD": [".github/"],
     "Documentation": ["*.md", "docs/", "LICENSE"],
-    "Scripts": ["scripts/"],
+    "Scripts": ["scripts/", "*.py"],
     "Config": [".env", "go.mod", "go.sum", ".gitignore"]
 }
 
@@ -29,71 +29,37 @@ def get_category(filename):
 def run_command(cmd):
     return subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
 
-def analyze_main():
-    print("Analyzing main branch...")
-    files = run_command("git ls-tree -r main --name-only").split('\n')
+def analyze_ref(ref):
+    print(f"Analyzing {ref}...")
+    try:
+        files = run_command(f"git ls-tree -r {ref} --name-only").split('\n')
+    except subprocess.CalledProcessError:
+        print(f"Error: Could not read ref {ref}")
+        return {}
+
     stats = {}
     
     for f in files:
         if not f: continue
         try:
-            content = run_command(f"git show main:'{f}'")
+            # Check if file exists in that ref
+            content = run_command(f"git show {ref}:'{f}'")
             lines = len(content.split('\n'))
             cat = get_category(f)
             stats[cat] = stats.get(cat, 0) + lines
         except Exception as e:
-            print(f"Error reading {f}: {e}")
+            # print(f"Error reading {f} in {ref}: {e}")
+            pass
             
     return stats
 
-def analyze_branches(branches):
-    branch_stats = {}
-    for branch in branches:
-        print(f"Analyzing branch {branch}...")
-        try:
-            # numstat gives: added deleted filename
-            diff = run_command(f"git diff --numstat main...{branch}")
-            stats = {}
-            for line in diff.split('\n'):
-                if not line: continue
-                parts = line.split()
-                if len(parts) < 3: continue
-                added = int(parts[0]) if parts[0] != '-' else 0
-                deleted = int(parts[1]) if parts[1] != '-' else 0
-                filename = " ".join(parts[2:])
-                
-                cat = get_category(filename)
-                # Store net change for now, we will calculate total later
-                if cat not in stats:
-                    stats[cat] = {'added': 0, 'deleted': 0}
-                stats[cat]['added'] += added
-                stats[cat]['deleted'] += deleted
-            branch_stats[branch] = stats
-        except Exception as e:
-            print(f"Error analyzing branch {branch}: {e}")
-    return branch_stats
-
 def main():
-    main_stats = analyze_main()
-    # Only analyze 2-gke-cicd-base (1-risk-analysis is a planning branch)
-    gke_base_stats = analyze_branches(["2-gke-cicd-base"])
-    
-    # Calculate cumulative totals
-    cumulative_stats = {}
-    
-    # Main baseline
-    cumulative_stats["main"] = main_stats
-    
-    # GKE Base = Main + gke-base changes
-    gke_cumulative = dict(main_stats)
-    for cat, changes in gke_base_stats.get("2-gke-cicd-base", {}).items():
-        gke_cumulative[cat] = gke_cumulative.get(cat, 0) + changes['added'] - changes['deleted']
-    cumulative_stats["2-gke-cicd-base"] = gke_cumulative
+    baseline_stats = analyze_ref("baseline")
+    main_stats = analyze_ref("main")
     
     report = {
-        "main": main_stats,
-        "branches_delta": gke_base_stats,
-        "cumulative": cumulative_stats
+        "baseline": baseline_stats,
+        "main": main_stats
     }
     
     print(json.dumps(report, indent=2))
@@ -105,47 +71,45 @@ def generate_chart(report):
         import matplotlib.pyplot as plt
         import numpy as np
         
-        # Use cumulative data for the chart - show progression: main -> gke-base
-        branch_order = ["main", "2-gke-cicd-base"]
-        data = {k: report['cumulative'][k] for k in branch_order}
+        refs = ["baseline", "main"]
+        data = {k: report[k] for k in refs}
         
-        branches = list(data.keys())
-        # Rename for display
-        branch_labels = ["Main", "GKE CI/CD Base"]
-        categories = sorted(list({k for b in data.values() for k in b.keys()}))
+        ref_labels = ["Baseline (Local)", "Production (Main)"]
+        categories = sorted(list({k for r in data.values() for k in r.keys()}))
         
         if not categories:
             print("No data to plot.")
             return
 
-        x = np.arange(len(branches))
+        x = np.arange(len(refs))
         
-        fig, ax = plt.subplots(figsize=(12, 7))
+        fig, ax = plt.subplots(figsize=(10, 6))
         
         # Create stacked bar chart
-        bottom = np.zeros(len(branches))
-        colors = plt.cm.Set3(np.linspace(0, 1, len(categories)))
+        bottom = np.zeros(len(refs))
+        # Use a nice color map
+        colors = plt.cm.Paired(np.linspace(0, 1, len(categories)))
         
         for i, cat in enumerate(categories):
-            vals = [data[b].get(cat, 0) for b in branches]
+            vals = [data[r].get(cat, 0) for r in refs]
             ax.bar(x, vals, label=cat, bottom=bottom, color=colors[i])
             bottom += vals
             
         ax.set_ylabel('Total Lines of Code', fontsize=12)
-        ax.set_title('Cumulative Code Growth Across Branches', fontsize=14, fontweight='bold')
+        ax.set_title('Codebase Evolution: Baseline vs. Production', fontsize=14, fontweight='bold')
         ax.set_xticks(x)
-        ax.set_xticklabels(branch_labels, fontsize=11)
-        ax.legend(loc='upper left', fontsize=10)
+        ax.set_xticklabels(ref_labels, fontsize=11)
+        ax.legend(loc='upper left', bbox_to_anchor=(1, 1), fontsize=10)
         ax.grid(axis='y', alpha=0.3)
         
         # Add total labels on top of each bar
-        for i, branch in enumerate(branches):
-            total = sum(data[branch].values())
-            ax.text(i, total, f'{total:,}', ha='center', va='bottom', fontweight='bold', fontsize=10)
+        for i, ref in enumerate(refs):
+            total = sum(data[ref].values())
+            ax.text(i, total + 50, f'{total:,}', ha='center', va='bottom', fontweight='bold', fontsize=10)
         
         plt.tight_layout()
-        plt.savefig('branch_comparison.png', dpi=150)
-        print("Chart saved to branch_comparison.png")
+        plt.savefig('docs/repo_evolution.png', dpi=150)
+        print("Chart saved to docs/repo_evolution.png")
         
     except ImportError:
         print("matplotlib not found, skipping chart generation")
@@ -154,3 +118,4 @@ def generate_chart(report):
 
 if __name__ == "__main__":
     main()
+
