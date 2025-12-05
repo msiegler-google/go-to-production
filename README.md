@@ -1,34 +1,42 @@
-<!-- Written by Gemini CLI -->
-<!-- This file is licensed under the MIT License. See the LICENSE file for details. -->
+# Go To-Do Application: A Journey to Production
 
-# Go To-Do Application
+> **Note:** This is a "toy" application. The code itself (a simple To-Do list) is intentionally basic. The real value of this repository is the **infrastructure, security, and observability** wrapper around it. It demonstrates how to take a simple app and make it production-ready on Google Cloud.
 
-A simple To-Do list application built with Go and PostgreSQL. This application allows users to create, view, update, and delete to-do items.
+## Purpose
 
-## Features
+This repository serves as a reference implementation for modern cloud-native practices on Google Cloud Platform (GCP). It evolves from a simple local Docker setup to a highly available, secure, and observable system running on GKE.
 
-*   **Create To-Do Items**: Add new tasks to your list.
-*   **View To-Do Items**: See all your pending and completed tasks.
-*   **Update To-Do Items**: Mark tasks as completed.
-*   **Delete To-Do Items**: Remove tasks from your list.
-*   **Persistent Storage**: To-Do items are stored in a PostgreSQL database.
-*   **High Availability**: Regional GKE cluster with read replicas
-*   **Resilience**: Automatic retries and circuit breakers for fault tolerance
-*   **Observability**: Prometheus metrics and Cloud Monitoring alerts
+**Key Concepts Demonstrated:**
+*   **Infrastructure as Code**: Terraform for GKE, Cloud SQL, and IAM.
+*   **CI/CD**: GitHub Actions + Google Cloud Deploy for automated canary releases.
+*   **Security**: Workload Identity, Secret Manager, Cloud Armor WAF, and IAM Auth.
+*   **Observability**: Prometheus metrics, Cloud Trace, and SLO monitoring.
+*   **Resilience**: Circuit breakers, retries, and regional high availability.
 
-## Architecture
+## The Journey to Production
 
-### Resilience Features (99.9% Availability)
-- **Exponential Backoff Retries**: All database operations retry automatically on transient failures
-- **Circuit Breaker**: Prevents cascading failures when database is consistently unavailable
-- **Read Replica**: Read traffic distributed to replica for better performance and availability
-- **Point-in-Time Recovery**: Database backups with PITR enabled
+We have documented every step of the "productionization" process. You can follow along by checking out the specific git tags associated with each milestone.
 
-### Infrastructure
-- **Compute**: Regional GKE cluster in `us-central1` (multi-zone)
-- **Database**: Cloud SQL PostgreSQL with HA configuration and read replica
-- **Deployment**: Cloud Deploy with canary releases
-- **Monitoring**: Google Cloud Monitoring + Managed Prometheus
+👉 **[Read the Full Production Guide](PRODUCTION_JOURNEY.md)**
+
+This guide walks you through:
+1.  **Risk Analysis**: Identifying SPOFs and security gaps.
+2.  **Base Infrastructure**: Getting a "walking skeleton" on GKE.
+3.  **High Availability**: Regional clusters and HA databases.
+4.  **Security Hardening**: WAF, IAM Auth, and Secret Manager.
+5.  **Advanced Deployment**: Canary releases with Cloud Deploy.
+6.  **Observability**: Metrics, Tracing, and SLOs.
+
+---
+
+## Baseline Application
+
+If you just want to run the app locally or deploy a simple version to Cloud Run, follow the steps below.
+
+### Features
+*   Create, View, Update, Delete To-Do items.
+*   Persistent storage in PostgreSQL.
+*   Simple HTML/JS frontend.
 
 ## Prerequisites
 
