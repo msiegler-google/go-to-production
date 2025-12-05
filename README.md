@@ -73,3 +73,14 @@ Each milestone represents a specific tag in the git history. You can checkout th
 See **[Milestone 0: Baseline Application](docs/00_BASELINE.md)** for instructions on running the local development version.
 
 See **[Runbook](docs/RUNBOOK.md)** for operational procedures.
+
+## Future Work
+
+The current implementation represents a production-ready baseline for a single region. Future enhancements to reach global scale and higher availability would include:
+
+*   **Multi-Region Deployment**: Replicating the entire stack (GKE, Cloud SQL) to a second region (e.g., `us-east1`) for disaster recovery and lower latency for geographically distributed users.
+*   **Global Load Balancing**: Using Google Cloud Global External Load Balancer with a single Anycast IP to route traffic to the nearest healthy region.
+*   **Cross-Region Database Replication**: Configuring Cloud SQL cross-region replicas to ensure data durability and fast failover in case of a regional outage.
+*   **Service Mesh**: Implementing Istio or Anthos Service Mesh for advanced traffic management (mTLS, canary weighting, circuit breaking) across clusters.
+*   **GitOps**: Migrating from push-based CI/CD (Cloud Deploy) to pull-based GitOps (ArgoCD or Config Sync) for better configuration management.
+
