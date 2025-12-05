@@ -96,8 +96,6 @@ The application exposes the following API endpoints:
 
 ## Documentation
 
-## Documentation
-
 - **[Runbook](docs/RUNBOOK.md)** - Operational procedures and troubleshooting
 - **[Base Deployment Guide](docs/BASE_DEPLOYMENT_GUIDE.md)** - Manual steps for initial GKE setup
 - **[HA & Scalability Guide](docs/HA_SCALABILITY_GUIDE.md)** - Regional cluster and HPA details
