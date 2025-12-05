@@ -43,10 +43,10 @@ spec:
 
       - name: cloudsql-proxy
         image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
-        args:
           - "--structured-logs"
           - "--auto-iam-authn"
-          - "smcghee-todo-p15n-38a6:us-central1:todo-app-db-instance"
+          - "smcghee-todo-p15n-38a6:us-central1:todo-app-db-instance?port=5432"
+          - "smcghee-todo-p15n-38a6:us-central1:todo-app-db-instance-replica?port=5433"
         securityContext:
           runAsNonRoot: true
         resources:
