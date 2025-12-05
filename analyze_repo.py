@@ -54,28 +54,45 @@ def analyze_ref(ref):
     return stats
 
 def main():
-    baseline_stats = analyze_ref("baseline")
-    main_stats = analyze_ref("main")
+    # Define milestones in chronological order
+    milestones = [
+        ("baseline", "Baseline"),
+        ("milestone-risk-analysis", "1. Risk"),
+        ("milestone-base-infra", "2. Infra"),
+        ("milestone-ha-scale", "3. HA/Scale"),
+        ("milestone-iam-auth", "4. IAM"),
+        ("milestone-security-hardening", "5. Security"),
+        ("milestone-advanced-deployment", "6. Deploy"),
+        ("milestone-observability-metrics", "7. Obs"),
+        ("milestone-resilience-slos", "8. Resilience"),
+        ("milestone-tracing-polish", "9. Polish")
+    ]
     
-    report = {
-        "baseline": baseline_stats,
-        "main": main_stats
-    }
+    report = {}
+    for tag, label in milestones:
+        report[tag] = analyze_ref(tag)
+        # Store label in report for chart generation
+        report[tag]["_label"] = label
     
-    print(json.dumps(report, indent=2))
+    # print(json.dumps(report, indent=2))
     
-    generate_chart(report)
+    generate_chart(report, milestones)
 
-def generate_chart(report):
+def generate_chart(report, milestones):
     try:
         import matplotlib.pyplot as plt
         import numpy as np
         
-        refs = ["baseline", "main"]
-        data = {k: report[k] for k in refs}
+        refs = [m[0] for m in milestones]
+        labels = [m[1] for m in milestones]
         
-        ref_labels = ["Baseline (Local)", "Production (Main)"]
-        categories = sorted(list({k for r in data.values() for k in r.keys()}))
+        # Extract categories (excluding _label)
+        categories = set()
+        for r in refs:
+            for k in report[r].keys():
+                if k != "_label":
+                    categories.add(k)
+        categories = sorted(list(categories))
         
         if not categories:
             print("No data to plot.")
@@ -83,7 +100,7 @@ def generate_chart(report):
 
         x = np.arange(len(refs))
         
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(14, 8))
         
         # Create stacked bar chart
         bottom = np.zeros(len(refs))
@@ -91,21 +108,21 @@ def generate_chart(report):
         colors = plt.cm.Paired(np.linspace(0, 1, len(categories)))
         
         for i, cat in enumerate(categories):
-            vals = [data[r].get(cat, 0) for r in refs]
+            vals = [report[r].get(cat, 0) for r in refs]
             ax.bar(x, vals, label=cat, bottom=bottom, color=colors[i])
             bottom += vals
             
         ax.set_ylabel('Total Lines of Code', fontsize=12)
-        ax.set_title('Codebase Evolution: Baseline vs. Production', fontsize=14, fontweight='bold')
+        ax.set_title('Codebase Evolution Across Milestones', fontsize=16, fontweight='bold')
         ax.set_xticks(x)
-        ax.set_xticklabels(ref_labels, fontsize=11)
+        ax.set_xticklabels(labels, fontsize=10, rotation=45, ha='right')
         ax.legend(loc='upper left', bbox_to_anchor=(1, 1), fontsize=10)
         ax.grid(axis='y', alpha=0.3)
         
         # Add total labels on top of each bar
         for i, ref in enumerate(refs):
-            total = sum(data[ref].values())
-            ax.text(i, total + 50, f'{total:,}', ha='center', va='bottom', fontweight='bold', fontsize=10)
+            total = sum(v for k, v in report[ref].items() if k != "_label")
+            ax.text(i, total + 50, f'{total:,}', ha='center', va='bottom', fontweight='bold', fontsize=9)
         
         plt.tight_layout()
         plt.savefig('docs/repo_evolution.png', dpi=150)

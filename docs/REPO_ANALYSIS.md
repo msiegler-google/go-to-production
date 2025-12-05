@@ -48,9 +48,9 @@ The repository has grown from a simple local Docker setup to a comprehensive clo
 
 ## Visualization
 
-![Codebase Evolution: Baseline vs. Production](repo_evolution.png)
+![Codebase Evolution Across Milestones](repo_evolution.png)
 
-The chart above visualizes the dramatic shift in codebase composition. While the "Application Code" (blue) grew modestly, the "IaC" (green) and "Documentation" (orange) layers expanded significantly to wrap the application in a production-ready environment.
+The chart above visualizes the step-by-step growth of the repository. You can see the "Infrastructure" (green) and "Documentation" (orange) layers expanding with each milestone, while the "Application Code" (blue) grows more gradually as we add features like metrics and tracing.
 
 ## Conclusion
 
