@@ -49,6 +49,13 @@ resource "google_project_iam_member" "service_account_user" {
   member  = "serviceAccount:${google_service_account.github_actions_deployer.email}"
 }
 
+# Grant the Cloud Deploy Rollout Manager role to the Service Account (for Automation)
+resource "google_project_iam_member" "cloud_deploy_rollout_manager" {
+  project = var.project_id
+  role    = "roles/clouddeploy.rolloutManager"
+  member  = "serviceAccount:${google_service_account.github_actions_deployer.email}"
+}
+
 # Service Account for GKE Nodes
 resource "google_service_account" "gke_node" {
   account_id   = "gke-node-sa"
