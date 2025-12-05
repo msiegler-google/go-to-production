@@ -162,4 +162,89 @@ See **[Runbook](docs/RUNBOOK.md)** for operational procedures.
 *   **With Multi-Region**: ~99.99%. Downtime allowed: ~4m / month.
 *   **With GitOps + Auto-Rollback**: Reduces *Mean Time To Recovery (MTTR)* significantly, preserving the error budget.
 
+## Testing Strategy
+
+### Overview
+A comprehensive testing strategy is critical for maintaining reliability and catching issues before they reach production. Our testing approach includes three layers:
+
+#### 1. Unit Tests ⭐ (High Priority)
+**Purpose**: Fast feedback on individual components and business logic.
+
+**Coverage**:
+*   HTTP handlers (`getTodos`, `addTodo`, `updateTodo`, `deleteTodo`)
+*   Circuit breaker logic and state transitions
+*   Retry mechanisms with exponential backoff
+*   Response writer wrapper and metrics recording
+*   Security headers middleware
+*   JSON encoding/decoding edge cases
+
+**Benefits**:
+*   Fast execution (milliseconds)
+*   No external dependencies
+*   Runs in CI on every commit
+*   Documents expected behavior
+*   Catches regressions immediately
+
+#### 2. Integration/Smoke Tests ⭐⭐ (Medium Priority)
+**Purpose**: Validate end-to-end functionality with real dependencies.
+
+**Coverage**:
+*   Database connectivity with Cloud SQL IAM authentication
+*   Secret Manager access and JSON parsing
+*   Full HTTP request/response cycles
+*   Read replica fallback logic
+*   Health check endpoints (`/healthz`, `/metrics`)
+*   Cloud Trace integration
+
+**Benefits**:
+*   Validates actual GCP integrations
+*   Can run in CI with test database (docker-compose)
+*   Catches configuration issues before production
+*   Verifies infrastructure-as-code changes
+
+#### 3. Chaos/Resilience Tests ⭐ (Lower Priority)
+**Purpose**: Validate robustness features under failure conditions.
+
+**Coverage**:
+*   Database connection failures and recovery
+*   Circuit breaker opening/closing behavior
+*   Retry exhaustion scenarios
+*   Read replica failover to primary
+*   Network timeouts and transient errors
+*   Concurrent request handling under load
+
+**Benefits**:
+*   Validates circuit breakers and retry logic actually work
+*   Builds confidence in production resilience
+*   Aligns with SRE best practices
+*   Prevents "works in theory" scenarios
+
+### Test Execution
+
+**Local Development**:
+```bash
+# Run all tests
+go test -v ./...
+
+# Run with coverage
+go test -v -cover ./...
+
+# Run integration tests only
+go test -v -tags=integration ./...
+
+# Run chaos tests
+go test -v -tags=chaos ./...
+```
+
+**CI/CD Integration**:
+*   Unit tests run on every push (already configured in `.github/workflows/build-test.yml`)
+*   Integration tests run with docker-compose PostgreSQL
+*   Chaos tests run on-demand or weekly schedule
+*   Coverage reports uploaded to code review
+
+### Success Metrics
+*   **Target Code Coverage**: 80%+ for critical paths
+*   **Test Execution Time**: \<30s for unit tests, \<2m for integration tests
+*   **Flakiness**: \<1% test failure rate unrelated to actual bugs
+
 
