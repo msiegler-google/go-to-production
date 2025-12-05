@@ -27,8 +27,9 @@ profiles:
     container:
       name: verify-healthz
       image: curlimages/curl:latest
-      command: ["/bin/sh"]
-      args:
+                executionMode:
+                  kubernetesCluster: {}
+                command: ["/bin/sh"]      args:
       - -c
       - |
         echo "Verifying deployment health..."
