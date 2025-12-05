@@ -1,10 +1,18 @@
-# Phase 4: Secure Configuration Implementation Guide
+# Secure Configuration Guide (Milestone 4)
 
-This guide documents the steps to secure the todo-app-go configuration by migrating credentials to Google Secret Manager and implementing Workload Identity.
+This guide documents the steps to secure the configuration by migrating credentials to Google Secret Manager and implementing Workload Identity. This corresponds to the **`milestone-iam-auth`** tag.
+
+## Getting Started
+
+First, checkout the code for this milestone:
+
+```bash
+git checkout tags/milestone-iam-auth
+```
 
 ## Overview
 
-Phase 4 implements the following security improvements:
+Milestone 4 implements the following security improvements:
 - **Google Secret Manager**: Stores sensitive database credentials securely.
 - **Workload Identity**: Allows Kubernetes pods to authenticate with Google Cloud APIs using a Kubernetes Service Account (KSA) mapped to a Google Service Account (GSA), eliminating the need for long-lived service account keys.
 - **Application Logic**: The application now fetches secrets directly from Secret Manager at runtime.

@@ -1,10 +1,18 @@
-# Phase 3: High Availability and Scalability Implementation Guide
+# High Availability & Scalability Guide (Milestone 3)
 
-This guide documents the steps to upgrade the todo-app-go infrastructure from a zonal deployment to a regional, highly available, and scalable deployment.
+This guide documents the steps to upgrade the infrastructure to a regional, highly available configuration. This corresponds to the **`milestone-ha-scale`** tag.
+
+## Getting Started
+
+First, checkout the code for this milestone:
+
+```bash
+git checkout tags/milestone-ha-scale
+```
 
 ## Overview
 
-Phase 3 implements the following improvements:
+Milestone 3 implements the following improvements:
 - **Regional GKE Cluster**: Multi-zone Kubernetes cluster for high availability
 - **Regional Cloud SQL**: High availability database with automatic failover
 - **Horizontal Pod Autoscaling (HPA)**: Automatic scaling based on CPU utilization

@@ -1,6 +1,14 @@
-# HOWTO: Manual Steps for `feature/gke-base-deployment`
+# Base Deployment Guide (Milestone 2)
 
-This document outlines manual steps required after running `terraform apply` for the `feature/gke-base-deployment` branch.
+This document outlines the manual steps required to deploy the "Walking Skeleton" version of the infrastructure. This corresponds to the **`milestone-base-infra`** tag.
+
+## Getting Started
+
+First, checkout the code for this milestone:
+
+```bash
+git checkout tags/milestone-base-infra
+```
 
 ---
 
