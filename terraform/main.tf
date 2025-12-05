@@ -6,6 +6,10 @@ terraform {
       source = "hashicorp/google"
     }
   }
+  backend "gcs" {
+    bucket = "tf-state-smcghee-todo-p15n-38a6"
+    prefix = "terraform/state"
+  }
 }
 
 # Configure the Google Cloud provider
