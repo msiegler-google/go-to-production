@@ -14,7 +14,7 @@ vendor/
 terraform/.terraform/
 *.tfvars
 
-.vscode/
+
 terraform/gcp-sa-key.json
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
