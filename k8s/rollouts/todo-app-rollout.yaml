@@ -5,6 +5,7 @@ metadata:
   namespace: todo-app
   labels:
     app: todo-app-go
+    updated-at: "2025-12-19T10-45" # Trigger rollout
 spec:
   replicas: 2
   selector:
