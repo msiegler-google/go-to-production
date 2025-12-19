@@ -125,16 +125,21 @@ This project currently costs approximately **$17.00 / day** to run in its fully 
 
 ```mermaid
 xychart-beta
-    title "Daily Cost Breakdown by Category ($)"
+    title "Cost Evolution: Total (Bar) vs. Categories (Lines)"
     x-axis ["M00", "M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11"]
     y-axis "Daily Cost ($)" 0 --> 20
-    bar [0, 0, 1.0, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2]
-    bar [0, 0, 4.0, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2]
-    bar [0, 0, 1.0, 1.6, 1.6, 1.6, 1.6, 2.1, 2.6, 3.1, 3.4, 3.6]
-    line [0, 0, 6.0, 15.0, 15.0, 15.0, 15.0, 15.5, 16.0, 16.5, 16.8, 17.0]
+    bar [0, 0, 6.0, 15.0, 15.0, 15.0, 15.0, 15.5, 16.0, 16.5, 16.8, 17.0]
+    line [0, 0, 1.0, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2, 6.2]
+    line [0, 0, 4.0, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2, 7.2]
+    line [0, 0, 1.0, 1.6, 1.6, 1.6, 1.6, 2.1, 2.6, 3.1, 3.4, 3.6]
 ```
 
-> **Chart Legend:** Grouped bars represent **Cloud SQL**, **GKE (Management + Nodes)**, and **Other (Net + Obs)** in order. The line tracks the **Cumulative Total Daily Cost**.
+> **Visual Legend:**
+> *   📊 **Bars**: Total Daily Cost
+> *   📈 **Purple Line**: Cloud SQL (HA + Replica)
+> *   📈 **Blue Line**: GKE (Management Fee + Nodes)
+> *   📈 **Orange Line**: Others (Networking, Logging, Backups)
+> *   Note: Mermaid `xychart-beta` does not support native color legends yet; colors are assigned automatically by the renderer.
 
 ### Cost Inflection Points
 
