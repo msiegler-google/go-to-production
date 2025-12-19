@@ -15,6 +15,6 @@ spec:
               - name: test
                 image: curlimages/curl
                 command: ["/bin/sh", "-c"]
-                args: ["curl -s -f http://todo-app-go-service:8080/healthz"]
+                args: ["curl -s -f http://todo-app-go-service/healthz"]
               restartPolicy: Never
           backoffLimit: 1
