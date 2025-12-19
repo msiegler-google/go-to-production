@@ -89,6 +89,7 @@ pie
 | **9. Tracing** | `milestone-09-tracing-polish` | Distributed tracing & dashboarding. [Docs](docs/09_TRACING_AND_POLISH.md) |
 | **10. GitOps** | `milestone-10-gitops` | ArgoCD & automated policy enforcement. [Docs](docs/10_GITOPS_AND_AUTOMATION.md) |
 | **11. Policy & Rollouts** | `milestone-11-policy-rollouts` | OPA Gatekeeper & Automated Rollbacks. [Docs](docs/11_POLICY_AND_ROLLOUTS.md) |
+| **12. Supply Chain** | `milestone-12-supply-chain` | Vulnerability scanning, Cosign signing, Binary Authorization. [Docs](docs/12_SUPPLY_CHAIN_SECURITY.md) |
 
 ## Reliability & Operations
 
