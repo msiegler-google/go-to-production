@@ -42,7 +42,7 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
       - name: cloudsql-proxy
-        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+        image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1
         args:
           - "--structured-logs"
           - "--auto-iam-authn"
@@ -52,8 +52,11 @@ spec:
           runAsNonRoot: true
         resources:
           requests:
-            memory: "256Mi"
+            memory: "128Mi"
             cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
   strategy:
     canary:
       analysis:
