@@ -106,6 +106,10 @@ We focus heavily on Day 2 operations and reliability.
 *   **Automated Compliance**: Ensure zero-drift infrastructure where the running state always matches the repository (GitOps).
 *   **Developer Experience**: Simplify service discovery and ownership tracking via a centralized catalog (Internal Developer Platform).
 
+## GitHub & Repository Settings
+
+> **Note on Branch Protection:** You may notice that the `main` branch is not protected by Pull Request requirements. In a real production environment, branch protection is mandatory. However, for this **educational reference repo**, we have left it unprotected to allow you to push milestone updates directly and follow the journey without the overhead of manual PR approvals for every step.
+
 ## Technologies Used
 
 *   **Backend**: Go (Gin)
