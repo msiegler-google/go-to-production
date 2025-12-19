@@ -64,6 +64,28 @@ Once the emergency is resolved and the fix has been committed to Git, re-enable 
 kubectl patch app todo-app -n argocd -p '{"spec": {"syncPolicy": {"automated": {"prune": true, "selfHeal": true}}}}' --type merge
 ```
 
+## Observability & Dashboards
+
+### Cloud Monitoring Dashboard
+We have a custom dashboard aggregating GKE Workload, Alerting, and Cloud SQL storage metrics.
+
+*   **[Todo App Production Dashboard](https://console.cloud.google.com/monitoring/dashboards/builder/3db86f35-283e-445b-be65-8bb076e09210;customDuration=today?project=smcghee-todo-p15n-38a6&pageState=(%22eventTypes%22:(%22selected%22:%5B%22GKE_WORKLOAD_DEPLOYMENT%22,%22CLOUD_ALERTING_ALERT%22,%22CLOUD_SQL_STORAGE%22%5D)))**
+
+### Accessing ArgoCD
+ArgoCD is the control plane for our GitOps workflows. To access it:
+
+1.  **Port-forward the UI**:
+    ```bash
+    kubectl port-forward svc/argocd-server -n argocd 8080:443
+    ```
+2.  **Login**:
+    *   **URL**: `https://localhost:8080` (Bypass TLS warning)
+    *   **User**: `admin`
+    *   **Password**: Run this command to retrieve:
+        ```bash
+        kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+        ```
+
 ## Cloud Trace
 
 The application uses OpenTelemetry to export distributed traces to Cloud Trace.
