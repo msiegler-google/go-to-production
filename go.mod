@@ -14,7 +14,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sony/gobreaker v1.0.0
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.63.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.64.0
 	go.opentelemetry.io/otel v1.39.0
 	go.opentelemetry.io/otel/sdk v1.39.0
 )
