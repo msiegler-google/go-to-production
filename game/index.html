@@ -106,7 +106,7 @@
         ];
 
         const state = {
-            version: "8.4 [PROD]",
+            version: "8.5 [LAYOUT_FIX]",
             ru: 0,
             totalRuInception: 0, 
             uptimeLevel: 0,
@@ -122,7 +122,7 @@
             isEnding: false,
             wonGame: false,
             lastTick: performance.now(),
-            terminalLines: ["BOOTING SRE_OS v8.4...", "PRIMARY_ONCALL DETECTED.", "ANALYTICS: BACKGROUND_MODE."],
+            terminalLines: ["BOOTING SRE_OS v8.5...", "UI RECALIBRATED.", "STANDBY FOR PRIMARY_ONCALL."],
             shake: 0,
             incidents: [],
             upgrades: [
@@ -303,7 +303,6 @@
                         if (state.endSeq.currentLineIdx >= state.endSeq.lines.length) {
                             state.wonGame = true;
                             state.isEnding = false;
-                            // BALANCING: Spit out hidden stats to console for iteration
                             console.log("--- GRIND_REPORT [HIDDEN] ---");
                             state.stats.durations.forEach((d, i) => {
                                 console.log(`${MILESTONES[i].name}: ${Math.floor(d)}s`);
@@ -449,14 +448,11 @@
                 ctx.fillStyle = COLORS.phosphor; ctx.textAlign = "center";
                 ctx.font = "bold 40px 'Courier New'";
                 ctx.fillText("SYSTEM TERMINATED", canvas.width/2, canvas.height/2 - 60);
-                
                 ctx.font = "20px 'Courier New'";
                 ctx.fillText("THE ONLY WINNING MOVE IS NOT TO PLAY.", canvas.width/2, canvas.height/2);
-                
                 ctx.fillStyle = COLORS.dim;
                 ctx.font = "14px 'Courier New'";
                 ctx.fillText(`TOTAL_TIME: ${Math.floor(state.stats.totalPlayTime)}s`, canvas.width/2, canvas.height/2 + 40);
-
                 const rX = canvas.width/2-150, rY = canvas.height/2 + 100, rW = 300, rH = 50;
                 drawPulseBox(rX, rY, rW, rH, COLORS.psycho);
                 ctx.fillStyle = COLORS.psycho; ctx.font = "bold 20px 'Courier New'";
@@ -494,6 +490,7 @@
             ctx.save(); if (state.shake > 1 && !state.isPaused) ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake);
             ctx.strokeStyle = COLORS.dim; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
             
+            // Directives
             ctx.textAlign = "left"; ctx.font = "14px 'Courier New'"; ctx.fillStyle = COLORS.prestige;
             ctx.fillText(`--- ARCHITECTURE DIRECTIVES [AP: ${state.ap}] ---`, 50, 45);
             ['velocity', 'reliability', 'observability'].forEach((d, i) => {
@@ -504,24 +501,18 @@
                 state.buttons.push({ x: x, y: 55, w: 180, h: 25, onClick: () => { if (state.ap > 0) { state.ap--; state.directives[d]++; } } });
             });
             
+            // STATUS COUNTERS
             ctx.textAlign = "center"; ctx.font = "16px 'Courier New'"; ctx.fillStyle = COLORS.dim;
             ctx.fillText(`INCEPTION_CRU: ${Math.floor(state.totalRuInception)}`, canvas.width / 2, 140);
-            ctx.fillStyle = state.isWarGames ? COLORS.alert : COLORS.phosphor;
-            ctx.font = "bold 58px 'Courier New'"; ctx.fillText(`STAGE: ${MILESTONES[state.uptimeLevel].name}`, canvas.width / 2, 195);
-            ctx.font = "bold 72px 'Courier New'"; ctx.fillText(formatReliability(state.visualNines, state.smoothLevel), canvas.width / 2, 260);
             
-            if (state.isWarGames) {
-                drawPulseBox(canvas.width/2-130, 85, 260, 45, COLORS.alert);
-                ctx.fillStyle = COLORS.alert; ctx.font = "bold 20px 'Courier New'";
-                ctx.fillText("[!] ABORT_SIMULATION", canvas.width / 2, 110);
-                state.buttons.push({ x: canvas.width/2 - 125, y: 85, w: 250, h: 50, onClick: () => startEndingSequence() });
-            } else {
-                const nextCost = getNextStageCost(state.uptimeLevel);
-                if (state.totalRuInception >= nextCost) drawPulseBox(canvas.width/2 - 200, 85, 400, 40, COLORS.phosphor);
-                ctx.fillStyle = state.totalRuInception >= nextCost ? COLORS.phosphor : COLORS.dim;
-                ctx.fillText(`NEXT: [${MILESTONES[state.uptimeLevel+1].name}] REQ: ${Math.floor(nextCost)} CRU`, canvas.width / 2, 110);
-                state.buttons.push({ x: canvas.width/2 - 200, y: 85, w: 400, h: 40, onClick: () => { if (!state.isPaused && state.totalRuInception >= nextCost) { state.uptimeLevel++; recordStageChange(); if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true; } } });
-            }
+            // Current Stage
+            ctx.fillStyle = state.isWarGames ? COLORS.alert : COLORS.phosphor;
+            ctx.font = "bold 32px 'Courier New'";
+            ctx.fillText(`STAGE: ${MILESTONES[state.uptimeLevel].name}`, canvas.width / 2, 190);
+            
+            // Reliability Metric
+            ctx.font = "bold 72px 'Courier New'"; 
+            ctx.fillText(formatReliability(state.visualNines, state.smoothLevel), canvas.width / 2, 260);
 
             if (!state.isWarGames) {
                 const m = (1 + (state.directives.velocity * 0.5));
@@ -530,10 +521,40 @@
                 ctx.fillText(`RU: ${Math.floor(state.ru)} | TP: ${pr.toFixed(1)} RU/s`, canvas.width / 2, 310);
             }
             
-            const bX = canvas.width / 2 - 240, bY = 360;
+            // Error Budget Bar
+            const bX = canvas.width / 2 - 240, bY = 340;
             ctx.strokeStyle = COLORS.dim; ctx.strokeRect(bX, bY, 480, 22);
             ctx.fillStyle = state.isFrozen ? COLORS.alert : COLORS.phosphor;
             ctx.fillRect(bX+4, bY+4, 472 * (state.errorBudget / (100 + state.directives.reliability * 10)), 14);
+
+            // NEXT STAGE / ABORT INTERFACE (BELOW STATUS)
+            if (state.isWarGames) {
+                const abX = canvas.width/2 - 130, abY = 400, abW = 260, abH = 50;
+                drawPulseBox(abX, abY, abW, abH, COLORS.alert);
+                ctx.fillStyle = COLORS.alert; ctx.font = "bold 32px 'Courier New'";
+                ctx.fillText("[!] ABORT_SIMULATION", canvas.width / 2, abY + 35);
+                state.buttons.push({ x: abX, y: abY, w: abW, h: abH, onClick: () => startEndingSequence() });
+            } else {
+                const nextCost = getNextStageCost(state.uptimeLevel);
+                const canAfford = state.totalRuInception >= nextCost;
+                const nxX = canvas.width/2 - 200, nxY = 400, nxW = 400, nxH = 50;
+                
+                if (canAfford) drawPulseBox(nxX, nxY, nxW, nxH, COLORS.phosphor);
+                ctx.fillStyle = canAfford ? COLORS.phosphor : COLORS.dim;
+                ctx.font = "bold 32px 'Courier New'";
+                ctx.fillText(`NEXT: ${MILESTONES[state.uptimeLevel+1].name}`, canvas.width / 2, nxY + 35);
+                
+                ctx.font = "14px 'Courier New'";
+                ctx.fillText(`REQ: ${Math.floor(nextCost)} CRU`, canvas.width / 2, nxY + 65);
+                
+                state.buttons.push({ x: nxX, y: nxY, w: nxW, h: nxH, onClick: () => { 
+                    if (!state.isPaused && canAfford) { 
+                        state.uptimeLevel++; 
+                        recordStageChange(); 
+                        if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true; 
+                    } 
+                } });
+            }
             
             const box = state.infraBox;
             ctx.save(); ctx.textAlign = "left"; ctx.fillStyle = COLORS.dim; ctx.fillText("--- INFRA-GRID TERMINAL ---", box.x, box.y - 10);
