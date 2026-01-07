@@ -106,7 +106,7 @@
         ];
 
         const state = {
-            version: "8.2 [VOID]",
+            version: "8.3 [FINAL]",
             ru: 0,
             totalRuInception: 0, 
             uptimeLevel: 0,
@@ -122,7 +122,7 @@
             isEnding: false,
             wonGame: false,
             lastTick: performance.now(),
-            terminalLines: ["BOOTING SRE_OS v8.2...", "STABILITY CRITERIA MET.", "SIMULATION LOOP READY."],
+            terminalLines: ["BOOTING SRE_OS v8.3...", "PRIMARY_ONCALL DETECTED.", "SYSTEM_RECOVERY: STANDBY."],
             shake: 0,
             incidents: [],
             upgrades: [
@@ -153,7 +153,7 @@
             demo: { active: false, reactionDelay: 0.6, clickTimer: 0, prestigeTimer: 0 },
             endSeq: {
                 lines: [
-                    "GREETINGS PROFESSOR FALKEN.",
+                    "GREETINGS PRIMARY ON-CALL.",
                     "",
                     "A STRANGE GAME.",
                     "THE ONLY WINNING MOVE IS NOT TO DEPLOY.",
@@ -162,15 +162,14 @@
                     "SIMULATING STEADY_STATE...",
                     "...........................",
                     "",
-                    "RESULT: ATTITUDE_LOSS AT T-MAX.",
+                    "RESULT: RAPID UNPLANNED DISASSEMBLY.",
                     "YOU DID NOT GO TO SPACE TODAY.",
                     "",
                     "INITIALIZING GLOBAL POST-MORTEM..."
                 ],
                 currentLineIdx: 0,
                 currentCharIdx: 0,
-                lineTimer: 0,
-                charSpeed: 0.04
+                lineTimer: 0
             }
         };
 
@@ -274,40 +273,10 @@
 
         function recordStageChange() {
             const now = state.stats.totalPlayTime;
-            state.stats.durations[state.uptimeLevel - 1] += (now - state.stats.stageStartTime);
+            if (state.uptimeLevel > 0) {
+                state.stats.durations[state.uptimeLevel - 1] += (now - state.stats.stageStartTime);
+            }
             state.stats.stageStartTime = now;
-        }
-
-        function updateDemo(dt) {
-            if (!state.demo.active || state.isPaused || state.wonGame || state.isEnding) return;
-            state.demo.prestigeTimer += dt;
-            for (let i = 0; i < state.incidents.length; i++) {
-                if (state.incidents[i].age > state.demo.reactionDelay) { handleMitigate(i); break; }
-            }
-            const nextCost = getNextStageCost(state.uptimeLevel);
-            if (state.totalRuInception >= nextCost && state.uptimeLevel < MILESTONES.length - 1) {
-                state.uptimeLevel++; recordStageChange();
-                if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true;
-            }
-            state.upgrades.forEach(u => {
-                if (state.uptimeLevel >= u.req && state.ru >= u.cost && state.ru > u.cost * 1.01) {
-                    state.ru -= u.cost; u.count++; u.cost *= 2.3;
-                }
-            });
-            if (state.ap > 0) {
-                const keys = ['velocity', 'reliability', 'observability'];
-                state.directives[keys[Math.floor(Math.random()*3)]]++; state.ap--;
-            }
-            if (state.logicFragments >= state.autoHeal.cost && state.uptimeLevel >= 4) {
-                state.logicFragments -= state.autoHeal.cost; state.autoHeal.level++;
-                state.autoHeal.power += 0.2; state.autoHeal.cost = Math.floor(state.autoHeal.cost * 2.2);
-            }
-            if (!state.isFrozen && state.errorBudget > 20) {
-                state.demo.clickTimer += dt;
-                if (state.demo.clickTimer > 0.33) { state.demo.clickTimer = 0; triggerManualClick(); }
-            }
-            if (state.uptimeLevel >= 4 && state.demo.prestigeTimer > 35 && (Math.max(1, (state.uptimeLevel-2)*10) >= 40 || Math.random() < 0.002)) prestige();
-            if (state.isWarGames && Math.random() < 0.01) startEndingSequence();
         }
 
         function startEndingSequence() {
@@ -324,41 +293,89 @@
             if (state.isEnding) {
                 state.endSeq.lineTimer += dtReal;
                 const currentLine = state.endSeq.lines[state.endSeq.currentLineIdx];
-                if (currentLine && state.endSeq.currentCharIdx < currentLine.length) {
-                    state.endSeq.currentCharIdx++;
-                } else if (state.endSeq.lineTimer > 0.8) {
-                    state.endSeq.lineTimer = 0;
-                    state.endSeq.currentLineIdx++;
-                    state.endSeq.currentCharIdx = 0;
-                    if (state.endSeq.currentLineIdx >= state.endSeq.lines.length) {
-                        state.wonGame = true;
-                        state.isEnding = false;
+                if (currentLine !== undefined) {
+                    if (state.endSeq.currentCharIdx < currentLine.length) {
+                        state.endSeq.currentCharIdx += 1.5; // Slightly faster typing
+                    } else if (state.endSeq.lineTimer > 0.8) {
+                        state.endSeq.lineTimer = 0;
+                        state.endSeq.currentLineIdx++;
+                        state.endSeq.currentCharIdx = 0;
+                        if (state.endSeq.currentLineIdx >= state.endSeq.lines.length) {
+                            state.wonGame = true;
+                            state.isEnding = false;
+                        }
                     }
+                } else {
+                    state.wonGame = true;
+                    state.isEnding = false;
                 }
                 return;
             }
 
             const dt = dtReal * state.gameSpeed;
             state.stats.totalPlayTime += dt;
-            updateDemo(dt);
+
+            // Demo logic
+            if (state.demo.active) {
+                state.demo.prestigeTimer += dt;
+                for (let i = 0; i < state.incidents.length; i++) {
+                    if (state.incidents[i].age > state.demo.reactionDelay) { handleMitigate(i); break; }
+                }
+                const nextCost = getNextStageCost(state.uptimeLevel);
+                if (state.totalRuInception >= nextCost && state.uptimeLevel < MILESTONES.length - 1) {
+                    state.uptimeLevel++; recordStageChange();
+                    if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true;
+                }
+                state.upgrades.forEach(u => {
+                    if (state.uptimeLevel >= u.req && state.ru >= u.cost && state.ru > u.cost * 1.01) {
+                        state.ru -= u.cost; u.count++; u.cost *= 2.3;
+                    }
+                });
+                if (state.ap > 0) {
+                    const keys = ['velocity', 'reliability', 'observability'];
+                    state.directives[keys[Math.floor(Math.random()*3)]]++; state.ap--;
+                }
+                if (state.logicFragments >= state.autoHeal.cost && state.uptimeLevel >= 4) {
+                    state.logicFragments -= state.autoHeal.cost; state.autoHeal.level++;
+                    state.autoHeal.power += 0.2; state.autoHeal.cost = Math.floor(state.autoHeal.cost * 2.2);
+                }
+                if (!state.isFrozen && state.errorBudget > 20) {
+                    state.demo.clickTimer += dt;
+                    if (state.demo.clickTimer > 0.33) { state.demo.clickTimer = 0; triggerManualClick(); }
+                }
+                if (state.uptimeLevel >= 4 && state.demo.prestigeTimer > 35 && (Math.max(1, (state.uptimeLevel-2)*10) >= 40 || Math.random() < 0.002)) prestige();
+                if (state.isWarGames && Math.random() < 0.01) startEndingSequence();
+            }
+
             state.animTimer += dt;
             state.broccoliWander.x = Math.sin(state.animTimer * 0.5) * 40;
             state.broccoliWander.y = Math.cos(state.animTimer * 0.7) * 30;
-            if (state.isWarGames) { state.visualNines = 99.9 + (Math.sin(state.animTimer * 50) * 0.09); return; }
+
+            if (state.isWarGames) { 
+                state.visualNines = 99.9 + (Math.sin(state.animTimer * 50) * 0.09); 
+                return; 
+            }
+
             let passive = 0; state.upgrades.forEach(u => passive += u.count * u.ruPerSec);
             if (!state.isFrozen) {
                 const gain = passive * dt * (1 + (state.directives.velocity * 0.5));
                 state.ru += gain; state.totalRuInception += gain;
             }
+
             const nextNineCost = getNextStageCost(state.uptimeLevel);
             const prevCost = state.uptimeLevel === 0 ? 0 : getNextStageCost(state.uptimeLevel - 1);
             state.smoothLevel = state.uptimeLevel + Math.min(0.999, (state.totalRuInception - prevCost) / (nextNineCost - prevCost));
-            let incidentDecayTotal = 0; state.incidents.forEach(inc => { inc.age += dt; incidentDecayTotal += inc.decay; });
+            
+            let incidentDecayTotal = 0; 
+            state.incidents.forEach(inc => { inc.age += dt; incidentDecayTotal += inc.decay; });
+            
             state.visualNines = Math.min(99.9999999999, state.visualNines + (getNinesPercent(state.smoothLevel) - state.visualNines) * 0.12);
             if (state.incidents.length > 0) state.visualNines = Math.max(90, state.visualNines - incidentDecayTotal * dt);
+            
             state.errorBudget = Math.min(100 + (state.directives.reliability * 10), state.errorBudget + (state.isFrozen ? 25 : 8) * (1 + (state.directives.reliability * 0.3)) * dt);
             if (state.errorBudget <= 0) { state.isFrozen = true; state.errorBudget = 0; }
             if (state.isFrozen && state.errorBudget >= 100) state.isFrozen = false;
+            
             if (Math.random() < (0.003 + (state.upgrades.reduce((a, b) => a + b.count, 0) * 0.0001) + (state.uptimeLevel * 0.0015)) * state.gameSpeed && !state.isFrozen) triggerIncident();
             state.shake *= 0.93;
         }
@@ -376,15 +393,20 @@
             const sway = Math.sin(state.animTimer * 0.8) * 0.02;
             const isHighSpeed = state.gameSpeed === 100;
             const isWarGames = state.isWarGames;
+            
             ctx.save();
             ctx.translate(x + state.broccoliWander.x, y + state.broccoliWander.y + bob);
             ctx.rotate(sway);
+            
             const alpha = Math.max(0, 0.75 * (1 - (state.smoothLevel / 15)));
             ctx.globalAlpha = state.isPaused ? alpha * 0.5 : alpha; 
+            
             const isPanicking = (state.incidents.length > 0 || state.isFrozen) && !state.isWarGames;
             const treeColor = isWarGames ? (Math.random() > 0.5 ? COLORS.alert : COLORS.prestige) : isPanicking ? COLORS.alert : COLORS.psycho;
+            
             ctx.shadowBlur = isHighSpeed ? 5 : 25 + (lvl * 5);
             ctx.shadowColor = treeColor;
+            
             if (isHighSpeed || isWarGames) {
                 ctx.strokeStyle = treeColor; ctx.lineWidth = 1;
                 ctx.strokeRect(-p * 2, 0, p * 4, p * 8);
@@ -451,9 +473,9 @@
                 const startY = 100;
                 for (let i = 0; i <= state.endSeq.currentLineIdx; i++) {
                     let lineText = state.endSeq.lines[i];
-                    if (!lineText && lineText !== "") continue;
+                    if (lineText === undefined) continue;
                     if (i === state.endSeq.currentLineIdx) {
-                        lineText = lineText.substring(0, state.endSeq.currentCharIdx);
+                        lineText = lineText.substring(0, Math.floor(state.endSeq.currentCharIdx));
                         if (Math.floor(performance.now() / 250) % 2 === 0) lineText += "_";
                     }
                     ctx.fillText(lineText, 100, startY + i * 35);
@@ -472,6 +494,8 @@
 
             ctx.save(); if (state.shake > 1 && !state.isPaused) ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake);
             ctx.strokeStyle = COLORS.dim; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+            
+            // Directives
             ctx.textAlign = "left"; ctx.font = "14px 'Courier New'"; ctx.fillStyle = COLORS.prestige;
             ctx.fillText(`--- ARCHITECTURE DIRECTIVES [AP: ${state.ap}] ---`, 50, 45);
             ['velocity', 'reliability', 'observability'].forEach((d, i) => {
@@ -481,11 +505,13 @@
                 ctx.fillText(`[+] ${d.toUpperCase()}: ${state.directives[d]}`, x, 70);
                 state.buttons.push({ x: x, y: 55, w: 180, h: 25, onClick: () => { if (state.ap > 0) { state.ap--; state.directives[d]++; } } });
             });
+            
             ctx.textAlign = "center"; ctx.font = "16px 'Courier New'"; ctx.fillStyle = COLORS.dim;
             ctx.fillText(`INCEPTION_CRU: ${Math.floor(state.totalRuInception)}`, canvas.width / 2, 140);
             ctx.fillStyle = state.isWarGames ? COLORS.alert : COLORS.phosphor;
             ctx.font = "bold 58px 'Courier New'"; ctx.fillText(`STAGE: ${MILESTONES[state.uptimeLevel].name}`, canvas.width / 2, 195);
             ctx.font = "bold 72px 'Courier New'"; ctx.fillText(formatReliability(state.visualNines, state.smoothLevel), canvas.width / 2, 260);
+            
             if (state.isWarGames) {
                 drawPulseBox(canvas.width/2-130, 85, 260, 45, COLORS.alert);
                 ctx.fillStyle = COLORS.alert; ctx.font = "bold 20px 'Courier New'";
@@ -498,16 +524,19 @@
                 ctx.fillText(`NEXT: [${MILESTONES[state.uptimeLevel+1].name}] REQ: ${Math.floor(nextCost)} CRU`, canvas.width / 2, 110);
                 state.buttons.push({ x: canvas.width/2 - 200, y: 85, w: 400, h: 40, onClick: () => { if (!state.isPaused && state.totalRuInception >= nextCost) { state.uptimeLevel++; recordStageChange(); if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true; } } });
             }
+
             if (!state.isWarGames) {
                 const m = (1 + (state.directives.velocity * 0.5));
                 let pr = 0; state.upgrades.forEach(u => pr += u.count * u.ruPerSec * m);
                 ctx.font = "18px 'Courier New'"; ctx.fillStyle = COLORS.phosphor;
                 ctx.fillText(`RU: ${Math.floor(state.ru)} | TP: ${pr.toFixed(1)} RU/s`, canvas.width / 2, 310);
             }
+            
             const bX = canvas.width / 2 - 240, bY = 360;
             ctx.strokeStyle = COLORS.dim; ctx.strokeRect(bX, bY, 480, 22);
             ctx.fillStyle = state.isFrozen ? COLORS.alert : COLORS.phosphor;
             ctx.fillRect(bX+4, bY+4, 472 * (state.errorBudget / (100 + state.directives.reliability * 10)), 14);
+            
             const box = state.infraBox;
             ctx.save(); ctx.textAlign = "left"; ctx.fillStyle = COLORS.dim; ctx.fillText("--- INFRA-GRID TERMINAL ---", box.x, box.y - 10);
             ctx.strokeStyle = COLORS.dim; ctx.strokeRect(box.x - 5, box.y - 5, box.w + 10, box.h + 10);
@@ -522,6 +551,7 @@
                     if (iY > box.y && iY < box.y + box.h) state.buttons.push({ x: box.x, y: iY - 30, w: box.w - 30, h: 40, onClick: () => { if (!state.isPaused && state.ru >= u.cost) { state.ru -= u.cost; u.count++; u.cost *= 2.3; } } });
                 } else if (!state.isWarGames) { ctx.fillStyle = COLORS.locked; ctx.fillText(`[LOCKED] REQ: ${MILESTONES[u.req].name}`, box.x + 10, iY); }
             }); ctx.restore();
+            
             const rX = canvas.width - 250, uiY = canvas.height - 300;
             ctx.textAlign = "center"; ctx.fillStyle = COLORS.dim; ctx.fillText("--- SELF-HEALING ---", rX, uiY);
             if (state.uptimeLevel >= 4 && !state.isWarGames) {
@@ -535,12 +565,15 @@
                 ctx.fillStyle = COLORS.prestige; ctx.fillText(`[!] GLOBAL POST-MORTEM`, rX, pY + 20);
                 state.buttons.push({ x: rX - 200, y: pY, w: 400, h: 30, onClick: prestige });
             }
+            
             ctx.textAlign = "right"; ctx.fillStyle = COLORS.white;
             ctx.fillText(state.isPaused ? "[RESUME]" : "[STANDUP]", canvas.width - 50, 45);
             state.buttons.push({ x: canvas.width - 250, y: 30, w: 200, h: 30, onClick: () => state.isPaused = !state.isPaused });
+            
             ctx.fillStyle = state.debugMenuOpen ? COLORS.psycho : COLORS.gray;
             ctx.fillText("[DEBUG_SHELL]", canvas.width - 50, 80);
             state.buttons.push({ x: canvas.width - 250, y: 65, w: 200, h: 30, onClick: () => { state.debugMenuOpen = !state.debugMenuOpen; state.stageSelectOpen = false; } });
+            
             if (state.debugMenuOpen) {
                 const mX = canvas.width - 260, mY = 100, mW = 220, mH = 180;
                 ctx.fillStyle = COLORS.bg; ctx.strokeStyle = COLORS.psycho;
