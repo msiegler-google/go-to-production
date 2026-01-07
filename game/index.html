@@ -106,7 +106,7 @@
         ];
 
         const state = {
-            version: "8.3 [FINAL]",
+            version: "8.4 [PROD]",
             ru: 0,
             totalRuInception: 0, 
             uptimeLevel: 0,
@@ -122,7 +122,7 @@
             isEnding: false,
             wonGame: false,
             lastTick: performance.now(),
-            terminalLines: ["BOOTING SRE_OS v8.3...", "PRIMARY_ONCALL DETECTED.", "SYSTEM_RECOVERY: STANDBY."],
+            terminalLines: ["BOOTING SRE_OS v8.4...", "PRIMARY_ONCALL DETECTED.", "ANALYTICS: BACKGROUND_MODE."],
             shake: 0,
             incidents: [],
             upgrades: [
@@ -295,7 +295,7 @@
                 const currentLine = state.endSeq.lines[state.endSeq.currentLineIdx];
                 if (currentLine !== undefined) {
                     if (state.endSeq.currentCharIdx < currentLine.length) {
-                        state.endSeq.currentCharIdx += 1.5; // Slightly faster typing
+                        state.endSeq.currentCharIdx += 1.5;
                     } else if (state.endSeq.lineTimer > 0.8) {
                         state.endSeq.lineTimer = 0;
                         state.endSeq.currentLineIdx++;
@@ -303,6 +303,11 @@
                         if (state.endSeq.currentLineIdx >= state.endSeq.lines.length) {
                             state.wonGame = true;
                             state.isEnding = false;
+                            // BALANCING: Spit out hidden stats to console for iteration
+                            console.log("--- GRIND_REPORT [HIDDEN] ---");
+                            state.stats.durations.forEach((d, i) => {
+                                console.log(`${MILESTONES[i].name}: ${Math.floor(d)}s`);
+                            });
                         }
                     }
                 } else {
@@ -315,7 +320,6 @@
             const dt = dtReal * state.gameSpeed;
             state.stats.totalPlayTime += dt;
 
-            // Demo logic
             if (state.demo.active) {
                 state.demo.prestigeTimer += dt;
                 for (let i = 0; i < state.incidents.length; i++) {
@@ -365,17 +369,12 @@
             const nextNineCost = getNextStageCost(state.uptimeLevel);
             const prevCost = state.uptimeLevel === 0 ? 0 : getNextStageCost(state.uptimeLevel - 1);
             state.smoothLevel = state.uptimeLevel + Math.min(0.999, (state.totalRuInception - prevCost) / (nextNineCost - prevCost));
-            
-            let incidentDecayTotal = 0; 
-            state.incidents.forEach(inc => { inc.age += dt; incidentDecayTotal += inc.decay; });
-            
+            let incidentDecayTotal = 0; state.incidents.forEach(inc => { inc.age += dt; incidentDecayTotal += inc.decay; });
             state.visualNines = Math.min(99.9999999999, state.visualNines + (getNinesPercent(state.smoothLevel) - state.visualNines) * 0.12);
             if (state.incidents.length > 0) state.visualNines = Math.max(90, state.visualNines - incidentDecayTotal * dt);
-            
             state.errorBudget = Math.min(100 + (state.directives.reliability * 10), state.errorBudget + (state.isFrozen ? 25 : 8) * (1 + (state.directives.reliability * 0.3)) * dt);
             if (state.errorBudget <= 0) { state.isFrozen = true; state.errorBudget = 0; }
             if (state.isFrozen && state.errorBudget >= 100) state.isFrozen = false;
-            
             if (Math.random() < (0.003 + (state.upgrades.reduce((a, b) => a + b.count, 0) * 0.0001) + (state.uptimeLevel * 0.0015)) * state.gameSpeed && !state.isFrozen) triggerIncident();
             state.shake *= 0.93;
         }
@@ -393,20 +392,15 @@
             const sway = Math.sin(state.animTimer * 0.8) * 0.02;
             const isHighSpeed = state.gameSpeed === 100;
             const isWarGames = state.isWarGames;
-            
             ctx.save();
             ctx.translate(x + state.broccoliWander.x, y + state.broccoliWander.y + bob);
             ctx.rotate(sway);
-            
             const alpha = Math.max(0, 0.75 * (1 - (state.smoothLevel / 15)));
             ctx.globalAlpha = state.isPaused ? alpha * 0.5 : alpha; 
-            
             const isPanicking = (state.incidents.length > 0 || state.isFrozen) && !state.isWarGames;
             const treeColor = isWarGames ? (Math.random() > 0.5 ? COLORS.alert : COLORS.prestige) : isPanicking ? COLORS.alert : COLORS.psycho;
-            
             ctx.shadowBlur = isHighSpeed ? 5 : 25 + (lvl * 5);
             ctx.shadowColor = treeColor;
-            
             if (isHighSpeed || isWarGames) {
                 ctx.strokeStyle = treeColor; ctx.lineWidth = 1;
                 ctx.strokeRect(-p * 2, 0, p * 4, p * 8);
@@ -453,16 +447,21 @@
 
             if (state.wonGame) {
                 ctx.fillStyle = COLORS.phosphor; ctx.textAlign = "center";
-                ctx.font = "bold 30px 'Courier New'"; ctx.fillText("OPTIMIZED_GRIND_REPORT [T: " + Math.floor(state.stats.totalPlayTime) + "s]", canvas.width/2, 80);
-                state.stats.durations.forEach((d, i) => {
-                    const r = (d / (state.stats.totalPlayTime || 1) * 100).toFixed(1);
-                    ctx.font = "14px 'Courier New'"; ctx.fillText(`${MILESTONES[i].name}: ${Math.floor(d)}s (${r}%)`, canvas.width/2, 120 + i * 25);
-                });
-                const rX = canvas.width/2-150, rY = canvas.height-120;
-                drawPulseBox(rX, rY, 300, 50, COLORS.psycho);
+                ctx.font = "bold 40px 'Courier New'";
+                ctx.fillText("SYSTEM TERMINATED", canvas.width/2, canvas.height/2 - 60);
+                
+                ctx.font = "20px 'Courier New'";
+                ctx.fillText("THE ONLY WINNING MOVE IS NOT TO PLAY.", canvas.width/2, canvas.height/2);
+                
+                ctx.fillStyle = COLORS.dim;
+                ctx.font = "14px 'Courier New'";
+                ctx.fillText(`TOTAL_TIME: ${Math.floor(state.stats.totalPlayTime)}s`, canvas.width/2, canvas.height/2 + 40);
+
+                const rX = canvas.width/2-150, rY = canvas.height/2 + 100, rW = 300, rH = 50;
+                drawPulseBox(rX, rY, rW, rH, COLORS.psycho);
                 ctx.fillStyle = COLORS.psycho; ctx.font = "bold 20px 'Courier New'";
                 ctx.fillText("[RELOAD_SYSTEM]", canvas.width/2, rY+32);
-                state.buttons.push({ x: rX, y: rY, w: 300, h: 50, onClick: () => location.reload() });
+                state.buttons.push({ x: rX, y: rY, w: rW, h: rH, onClick: () => location.reload() });
                 return;
             }
 
@@ -495,7 +494,6 @@
             ctx.save(); if (state.shake > 1 && !state.isPaused) ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake);
             ctx.strokeStyle = COLORS.dim; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
             
-            // Directives
             ctx.textAlign = "left"; ctx.font = "14px 'Courier New'"; ctx.fillStyle = COLORS.prestige;
             ctx.fillText(`--- ARCHITECTURE DIRECTIVES [AP: ${state.ap}] ---`, 50, 45);
             ['velocity', 'reliability', 'observability'].forEach((d, i) => {
