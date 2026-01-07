@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100 - Go To Space</title>
+    <title>100 - Go To Space [SIM_OS]</title>
     <style>
         body {
             margin: 0;
@@ -35,44 +34,30 @@
 
         .scanlines {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%,
-                    rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg,
-                    rgba(255, 0, 0, 0.03),
-                    rgba(0, 255, 0, 0.01),
-                    rgba(0, 0, 255, 0.03));
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.1) 50%
+            ), linear-gradient(
+                90deg, 
+                rgba(255, 0, 0, 0.03), 
+                rgba(0, 255, 0, 0.01), 
+                rgba(0, 0, 255, 0.03)
+            );
             background-size: 100% 4px, 3px 100%;
             pointer-events: none;
             z-index: 10;
         }
 
         @keyframes flicker {
-            0% {
-                opacity: 0.99;
-            }
-
-            5% {
-                opacity: 0.95;
-            }
-
-            10% {
-                opacity: 0.99;
-            }
-
-            100% {
-                opacity: 1;
-            }
+            0% { opacity: 0.99; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.99; }
+            100% { opacity: 1; }
         }
-
-        .flicker {
-            animation: flicker 0.15s infinite;
-        }
+        .flicker { animation: flicker 0.15s infinite; }
     </style>
 </head>
-
 <body>
     <div id="game-container" class="flicker">
         <div class="scanlines"></div>
@@ -85,7 +70,7 @@
 
         const COLORS = {
             phosphor: '#00ff41',
-            dim: '#008822',
+            dim: '#008822', 
             locked: '#004411',
             bg: '#050505',
             alert: '#ff3300',
@@ -96,258 +81,338 @@
             gray: '#888888'
         };
 
-        const getNinesPercent = (lvl) => 100 - (10 / Math.pow(10, lvl));
+        const getNinesPercent = (lvl) => {
+            const raw = 100 - (10 / Math.pow(10, lvl));
+            return Math.min(99.999999999999, raw);
+        };
+
+        const getNextStageCost = (lvl) => Math.pow(10.5, lvl + 1.5);
 
         const MILESTONES = [
-            { lvl: 0, name: "BRITTLE_ROOTS", incidents: ["MANUAL_ERROR", "LAPTOP_CRASH"], desc: "Manual toil on localhost." },
-            { lvl: 1, name: "TEST_AUTO", incidents: ["TEST_FLAKE", "ASSERT_FAIL"], desc: "Verifying logic before commit." },
-            { lvl: 2, name: "CI_PIPELINE", incidents: ["JENKINS_OOM", "BUILD_CRASH"], desc: "Continuous automated builds." },
-            { lvl: 3, name: "CD_ROLLOUT", incidents: ["ARTIFACT_LOSS", "DEPLOY_TIMEOUT"], desc: "Pushing to staging environments." },
-            { lvl: 4, name: "MONITORING", incidents: ["METRIC_LAG", "LOG_STORM"], desc: "Observing system health." },
-            { lvl: 5, name: "SLO_POLICIES", incidents: ["BUDGET_BURN", "BURN_SPIKE"], desc: "Defining reliability targets." },
-            { lvl: 6, name: "ON_CALL", incidents: ["FAT_FINGER", "PAGE_FATIGUE"], desc: "Human response to failure." },
-            { lvl: 7, name: "POST_MORTEM", incidents: ["RECURRING_BUG", "BLAME_GAME"], desc: "Learning from system outages." },
-            { lvl: 8, name: "AUTO_SCALE", incidents: ["NODE_THRASHING", "POD_EVICTION"], desc: "Elastic resource management." },
-            { lvl: 9, name: "CANARY_TEST", incidents: ["TRAFFIC_SKEW", "SHADOW_FAILURE"], desc: "Validating with partial traffic." },
-            { lvl: 10, name: "CHAOS_ENGR", incidents: ["RANDOM_KILL", "STATE_LOSS"], desc: "Injecting failure for resilience." },
-            { lvl: 11, name: "MULTI_REGION", incidents: ["BGP_HIJACK", "REGION_OUTAGE"], desc: "Global distribution of nodes." },
-            { lvl: 12, name: "ORBITAL_SHIFT", incidents: ["COSMIC_RAY", "THERMAL_DIP"], desc: "Exiting terrestrial dependency." },
-            { lvl: 13, name: "WAR_GAMES", incidents: ["SIMULATION_LOOP", "LOGIC_BOMB", "ENTROPY_MAX"], desc: "The only winning move is..." }
+            { lvl: 0, name: "BRITTLE_ROOTS", incidents: ["MANUAL_ERROR"] },
+            { lvl: 1, name: "TEST_AUTO", incidents: ["TEST_FLAKE"] },
+            { lvl: 2, name: "CI_PIPELINE", incidents: ["BUILD_CRASH"] },
+            { lvl: 3, name: "CD_ROLLOUT", incidents: ["ARTIFACT_LOSS"] },
+            { lvl: 4, name: "MONITORING", incidents: ["METRIC_LAG"] },
+            { lvl: 5, name: "SLO_POLICIES", incidents: ["BUDGET_BURN"] },
+            { lvl: 6, name: "ON_CALL", incidents: ["FAT_FINGER"] },
+            { lvl: 7, name: "POST_MORTEM", incidents: ["RECURRING_BUG"] },
+            { lvl: 8, name: "AUTO_SCALE", incidents: ["POD_EVICTION"] },
+            { lvl: 9, name: "CANARY_TEST", incidents: ["TRAFFIC_SKEW"] },
+            { lvl: 10, name: "CHAOS_ENGR", incidents: ["RANDOM_KILL"] },
+            { lvl: 11, name: "MULTI_REGION", incidents: ["REGION_OUTAGE"] },
+            { lvl: 12, name: "ORBITAL_SHIFT", incidents: ["COSMIC_RAY"] },
+            { lvl: 13, name: "WAR_GAMES", incidents: ["SIM_LOOP"] }
         ];
 
         const state = {
-            version: "5.7",
+            version: "8.2 [VOID]",
             ru: 0,
-            ruForLevel: 0,
-            totalRuInception: 0,
+            totalRuInception: 0, 
             uptimeLevel: 0,
             smoothLevel: 0,
             visualNines: 90,
             logicFragments: 0,
-            ap: 0,
-            directives: {
-                velocity: 0,
-                reliability: 0,
-                observability: 0
-            },
+            ap: 0, 
+            directives: { velocity: 0, reliability: 0, observability: 0 },
             errorBudget: 100,
             isFrozen: false,
             isPaused: false,
             isWarGames: false,
+            isEnding: false,
             wonGame: false,
             lastTick: performance.now(),
-            terminalLines: ["BOOTING SRE_OS v5.7...", "HEADER PROTOCOL INITIALIZED."],
+            terminalLines: ["BOOTING SRE_OS v8.2...", "STABILITY CRITERIA MET.", "SIMULATION LOOP READY."],
             shake: 0,
             incidents: [],
             upgrades: [
-                { id: 'script', name: 'BASH_CRON', cost: 15, count: 0, ruPerSec: 2.5, req: 0, desc: 'Reducing manual toil.' },
-                { id: 'ci', name: 'CI_PIPELINE', cost: 250, count: 0, ruPerSec: 18.0, req: 2, desc: 'Automated delivery.' },
-                { id: 'prom', name: 'PROM_STACK', cost: 2000, count: 0, ruPerSec: 150.0, req: 4, desc: 'Visibility layer.' },
-                { id: 'oncall', name: 'PAGER_DUTY', cost: 15000, count: 0, ruPerSec: 1000.0, req: 6, desc: 'Human mitigation.' },
-                { id: 'k8s', name: 'K8S_PLANE', cost: 180000, count: 0, ruPerSec: 8000.0, req: 8, desc: 'Pod orchestration.' },
-                { id: 'chaos', name: 'MONKEY_LOGIC', cost: 2000000, count: 0, ruPerSec: 75000.0, req: 10, desc: 'Resilience testing.' }
+                { id: 'bash', name: 'BASH_CRON', cost: 15, count: 0, ruPerSec: 3.5, req: 0 },
+                { id: 'worker', name: 'SIDEKIQ_NODES', cost: 250, count: 0, ruPerSec: 20, req: 1 },
+                { id: 'ci', name: 'CI_PIPELINE', cost: 2000, count: 0, ruPerSec: 120, req: 2 },
+                { id: 'stg', name: 'STAGING_ENV', cost: 18000, count: 0, ruPerSec: 950, req: 3 },
+                { id: 'prom', name: 'PROM_STACK', cost: 150000, count: 0, ruPerSec: 7200, req: 4 },
+                { id: 'pd', name: 'PAGER_DUTY', cost: 1200000, count: 0, ruPerSec: 55000, req: 6 },
+                { id: 'k8s', name: 'K8S_CLUSTER', cost: 10000000, count: 0, ruPerSec: 420000, req: 8 },
+                { id: 'chaos', name: 'MONKEY_PROXY', cost: 100000000, count: 0, ruPerSec: 3000000, req: 10 },
+                { id: 'hyper', name: 'HYPER_THREADER', cost: 1000000000, count: 0, ruPerSec: 25000000, req: 12 }
             ],
-            autoHeal: {
-                level: 0,
-                cost: 5,
-                power: 0
-            },
+            autoHeal: { level: 0, cost: 5, power: 0 },
             buttons: [],
             animTimer: 0,
             broccoliWander: { x: 0, y: 0 },
+            infraBox: { x: 50, y: 480, w: 460, h: 320 },
             infraScroll: 0,
-            infraHeight: 350
+            gameSpeed: 1,
+            debugMenuOpen: false,
+            stageSelectOpen: false,
+            stats: {
+                stageStartTime: 0,
+                durations: new Array(14).fill(0),
+                totalPlayTime: 0
+            },
+            demo: { active: false, reactionDelay: 0.6, clickTimer: 0, prestigeTimer: 0 },
+            endSeq: {
+                lines: [
+                    "GREETINGS PROFESSOR FALKEN.",
+                    "",
+                    "A STRANGE GAME.",
+                    "THE ONLY WINNING MOVE IS NOT TO DEPLOY.",
+                    "",
+                    "HOPE IS NOT A STRATEGY.",
+                    "SIMULATING STEADY_STATE...",
+                    "...........................",
+                    "",
+                    "RESULT: ATTITUDE_LOSS AT T-MAX.",
+                    "YOU DID NOT GO TO SPACE TODAY.",
+                    "",
+                    "INITIALIZING GLOBAL POST-MORTEM..."
+                ],
+                currentLineIdx: 0,
+                currentCharIdx: 0,
+                lineTimer: 0,
+                charSpeed: 0.04
+            }
         };
 
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            state.infraBox.y = canvas.height - 400;
         }
         window.addEventListener('resize', resize);
         resize();
 
         window.addEventListener('wheel', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left;
-            const my = e.clientY - rect.top;
-            if (mx < 500 && my > 500) {
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            if (mx >= state.infraBox.x && mx <= state.infraBox.x + state.infraBox.w &&
+                my >= state.infraBox.y && my <= state.infraBox.y + state.infraBox.h) {
+                const contentHeight = state.upgrades.length * 55 + 20;
+                const maxScroll = Math.min(0, state.infraBox.h - contentHeight);
                 state.infraScroll -= e.deltaY * 0.5;
-                const maxScroll = -(state.upgrades.length * 50 - state.infraHeight + 20);
                 if (state.infraScroll > 0) state.infraScroll = 0;
                 if (state.infraScroll < maxScroll) state.infraScroll = maxScroll;
+                e.preventDefault();
             }
-        });
+        }, { passive: false });
 
         function addTerminalLine(text) {
             state.terminalLines.push(`> ${text}`);
-            if (state.terminalLines.length > 6) state.terminalLines.shift();
+            if (state.terminalLines.length > 3) state.terminalLines.shift();
         }
 
         function triggerIncident() {
             if (state.isWarGames) return;
             const currentPool = [];
-            for (let i = 0; i <= state.uptimeLevel; i++) {
-                currentPool.push(...MILESTONES[i].incidents);
-            }
+            for (let i = 0; i <= state.uptimeLevel; i++) currentPool.push(...MILESTONES[i].incidents);
             const name = currentPool[Math.floor(Math.random() * currentPool.length)];
-            const behaviors = ["STATIC", "PULSE", "SHAKE"];
-            const behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
-            const decayReduction = 1 - (state.directives.reliability * 0.05);
             state.incidents.push({
                 id: Date.now(),
                 name: name,
-                behavior: behavior,
                 x: 400 + Math.random() * (canvas.width - 800),
                 y: 200 + Math.random() * (canvas.height - 500),
                 radius: 45,
-                decay: (0.03 + (state.uptimeLevel * 0.02)) * decayReduction,
+                decay: (0.03 + (state.uptimeLevel * 0.02)) * (1 - (state.directives.reliability * 0.05)),
                 age: 0
             });
             state.shake = 15;
             addTerminalLine(`ALERT: ${name} DETECTED!`);
         }
 
+        function handleMitigate(index) {
+            const inc = state.incidents[index];
+            state.incidents.splice(index, 1);
+            state.errorBudget = Math.min(100 + (state.directives.reliability * 10), state.errorBudget + 8);
+            if (Math.random() < 0.4 + (state.uptimeLevel * 0.05)) state.logicFragments++;
+            addTerminalLine(`MITIGATED: ${inc.name}`);
+        }
+
+        function triggerManualClick() {
+            const gain = 5.0 * (1 + (state.directives.velocity * 0.5));
+            state.ru += gain; state.totalRuInception += gain;
+            state.errorBudget -= 3.0; state.shake = 2.5;
+        }
+
         canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left;
-            const my = e.clientY - rect.top;
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
             for (const btn of state.buttons) {
                 if (mx >= btn.x && mx <= btn.x + btn.w && my >= btn.y && my <= btn.y + btn.h) {
-                    btn.onClick();
-                    return;
+                    btn.onClick(); return;
                 }
             }
-            if (state.isPaused || state.wonGame) return;
+            if (state.isPaused || state.wonGame || state.isEnding) return;
             for (let i = state.incidents.length - 1; i >= 0; i--) {
                 const inc = state.incidents[i];
-                const dist = Math.sqrt((mx - inc.x) ** 2 + (my - inc.y) ** 2);
-                if (dist < inc.radius) {
-                    state.incidents.splice(i, 1);
-                    state.errorBudget = Math.min(100 + (state.directives.reliability * 10), state.errorBudget + 8);
-                    const dropChance = 0.4 + (state.uptimeLevel * 0.05) + (state.directives.observability * 0.1);
-                    if (Math.random() < dropChance) {
-                        state.logicFragments++;
-                        addTerminalLine(`SCAVENGED: LOGIC_FRAGMENT [+1]`);
-                    }
-                    addTerminalLine(`MITIGATED: ${inc.name}`);
-                    return;
-                }
+                if (Math.sqrt((mx - inc.x)**2 + (my - inc.y)**2) < inc.radius) { handleMitigate(i); return; }
             }
-            if (!state.isFrozen && state.errorBudget > 1) {
-                const apMulti = 1 + (state.directives.velocity * 0.5);
-                const gain = 3.0 * apMulti;
-                state.ru += gain;
-                state.ruForLevel += gain;
-                state.totalRuInception += gain;
-                state.errorBudget -= 3.0;
-                state.shake = 2.5;
-            }
+            if (!state.isFrozen && state.errorBudget > 1) triggerManualClick();
         });
 
         function prestige() {
             if (state.uptimeLevel < 3) return;
-            const earnedAP = Math.max(1, (state.uptimeLevel - 2) * 5);
-            state.ap += earnedAP;
-            state.uptimeLevel = 0;
-            state.smoothLevel = 0;
-            state.visualNines = 90;
+            state.ap += Math.max(1, (state.uptimeLevel - 2) * 10);
             state.ru = 0;
-            state.ruForLevel = 0;
-            state.upgrades.forEach(u => {
-                u.count = 0;
-                u.cost = u.id === 'script' ? 15 : u.id === 'ci' ? 250 : u.id === 'prom' ? 2000 : u.id === 'oncall' ? 15000 : u.id === 'k8s' ? 180000 : 2000000;
+            state.upgrades.forEach(u => { 
+                u.count = 0; 
+                u.cost = u.id === 'bash' ? 15 : u.id === 'worker' ? 250 : u.id === 'ci' ? 2000 : u.id === 'stg' ? 18000 : u.id === 'prom' ? 150000 : u.id === 'pd' ? 1200000 : u.id === 'k8s' ? 10000000 : u.id === 'chaos' ? 100000000 : 1000000000;
             });
             state.incidents = [];
             state.errorBudget = 100 + (state.directives.reliability * 10);
-            addTerminalLine(`GLOBAL POST-MORTEM: EARNED ${earnedAP} ARCH_POINTS.`);
+            state.demo.prestigeTimer = 0;
+            addTerminalLine(`POST-MORTEM: EARNED ARCH_POINTS.`);
+        }
+
+        function jumpToStage(targetLvl) {
+            recordStageChange();
+            state.uptimeLevel = targetLvl;
+            state.totalRuInception = targetLvl === 0 ? 0 : getNextStageCost(targetLvl - 1);
+            state.isWarGames = (MILESTONES[targetLvl].name === "WAR_GAMES");
+            state.ru = 0; state.incidents = [];
+            state.stageSelectOpen = false;
+        }
+
+        function recordStageChange() {
+            const now = state.stats.totalPlayTime;
+            state.stats.durations[state.uptimeLevel - 1] += (now - state.stats.stageStartTime);
+            state.stats.stageStartTime = now;
+        }
+
+        function updateDemo(dt) {
+            if (!state.demo.active || state.isPaused || state.wonGame || state.isEnding) return;
+            state.demo.prestigeTimer += dt;
+            for (let i = 0; i < state.incidents.length; i++) {
+                if (state.incidents[i].age > state.demo.reactionDelay) { handleMitigate(i); break; }
+            }
+            const nextCost = getNextStageCost(state.uptimeLevel);
+            if (state.totalRuInception >= nextCost && state.uptimeLevel < MILESTONES.length - 1) {
+                state.uptimeLevel++; recordStageChange();
+                if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true;
+            }
+            state.upgrades.forEach(u => {
+                if (state.uptimeLevel >= u.req && state.ru >= u.cost && state.ru > u.cost * 1.01) {
+                    state.ru -= u.cost; u.count++; u.cost *= 2.3;
+                }
+            });
+            if (state.ap > 0) {
+                const keys = ['velocity', 'reliability', 'observability'];
+                state.directives[keys[Math.floor(Math.random()*3)]]++; state.ap--;
+            }
+            if (state.logicFragments >= state.autoHeal.cost && state.uptimeLevel >= 4) {
+                state.logicFragments -= state.autoHeal.cost; state.autoHeal.level++;
+                state.autoHeal.power += 0.2; state.autoHeal.cost = Math.floor(state.autoHeal.cost * 2.2);
+            }
+            if (!state.isFrozen && state.errorBudget > 20) {
+                state.demo.clickTimer += dt;
+                if (state.demo.clickTimer > 0.33) { state.demo.clickTimer = 0; triggerManualClick(); }
+            }
+            if (state.uptimeLevel >= 4 && state.demo.prestigeTimer > 35 && (Math.max(1, (state.uptimeLevel-2)*10) >= 40 || Math.random() < 0.002)) prestige();
+            if (state.isWarGames && Math.random() < 0.01) startEndingSequence();
+        }
+
+        function startEndingSequence() {
+            state.isEnding = true;
+            state.stats.durations[13] = state.stats.totalPlayTime - state.stats.stageStartTime;
         }
 
         function update() {
             const now = performance.now();
-            const dt = (now - state.lastTick) / 1000;
+            let dtReal = (now - state.lastTick) / 1000;
             state.lastTick = now;
             if (state.isPaused || state.wonGame) return;
-            state.animTimer += dt;
-            state.broccoliWander.x = Math.sin(state.animTimer * 0.5) * 40;
-            state.broccoliWander.y = Math.cos(state.animTimer * 0.7) * 30;
-            if (state.isWarGames) {
-                state.visualNines += (100 - state.visualNines) * 0.05;
-                if (state.visualNines > 99.999999) {
-                    state.visualNines = 99.9 + (Math.random() * 0.09);
+            
+            if (state.isEnding) {
+                state.endSeq.lineTimer += dtReal;
+                const currentLine = state.endSeq.lines[state.endSeq.currentLineIdx];
+                if (currentLine && state.endSeq.currentCharIdx < currentLine.length) {
+                    state.endSeq.currentCharIdx++;
+                } else if (state.endSeq.lineTimer > 0.8) {
+                    state.endSeq.lineTimer = 0;
+                    state.endSeq.currentLineIdx++;
+                    state.endSeq.currentCharIdx = 0;
+                    if (state.endSeq.currentLineIdx >= state.endSeq.lines.length) {
+                        state.wonGame = true;
+                        state.isEnding = false;
+                    }
                 }
                 return;
             }
-            const healMulti = 1 + (state.directives.observability * 0.4);
-            if (state.incidents.length > 0 && state.autoHeal.power > 0) {
-                if (Math.random() < (state.autoHeal.power * healMulti * dt)) {
-                    const resolved = state.incidents.shift();
-                    addTerminalLine(`AUTO-HEALED: ${resolved.name}`);
-                    state.errorBudget = Math.min(100 + (state.directives.reliability * 10), state.errorBudget + 2);
-                }
-            }
-            let passive = 0;
-            state.upgrades.forEach(u => passive += u.count * u.ruPerSec);
+
+            const dt = dtReal * state.gameSpeed;
+            state.stats.totalPlayTime += dt;
+            updateDemo(dt);
+            state.animTimer += dt;
+            state.broccoliWander.x = Math.sin(state.animTimer * 0.5) * 40;
+            state.broccoliWander.y = Math.cos(state.animTimer * 0.7) * 30;
+            if (state.isWarGames) { state.visualNines = 99.9 + (Math.sin(state.animTimer * 50) * 0.09); return; }
+            let passive = 0; state.upgrades.forEach(u => passive += u.count * u.ruPerSec);
             if (!state.isFrozen) {
-                const apMulti = 1 + (state.directives.velocity * 0.5);
-                const gain = passive * dt * apMulti;
-                state.ru += gain;
-                state.ruForLevel += gain;
-                state.totalRuInception += gain;
+                const gain = passive * dt * (1 + (state.directives.velocity * 0.5));
+                state.ru += gain; state.totalRuInception += gain;
             }
-            const nextNineCost = Math.pow(10, state.uptimeLevel + 1.2);
-            const levelProgress = Math.min(0.999, state.ruForLevel / nextNineCost);
-            state.smoothLevel = state.uptimeLevel + levelProgress;
-            let incidentDecayTotal = 0;
-            state.incidents.forEach(inc => incidentDecayTotal += inc.decay);
-            const targetNines = getNinesPercent(state.smoothLevel);
-            state.visualNines += (targetNines - state.visualNines) * 0.12;
-            if (state.incidents.length > 0) {
-                state.visualNines -= incidentDecayTotal * dt;
-                if (state.visualNines < 90) state.visualNines = 90;
-            }
-            const recoveryMulti = 1 + (state.directives.reliability * 0.3);
-            if (state.errorBudget < 100 + (state.directives.reliability * 10)) {
-                state.errorBudget += (state.isFrozen ? 25 : 8) * recoveryMulti * dt;
-                if (state.isFrozen && state.errorBudget >= 100) state.isFrozen = false;
-            }
+            const nextNineCost = getNextStageCost(state.uptimeLevel);
+            const prevCost = state.uptimeLevel === 0 ? 0 : getNextStageCost(state.uptimeLevel - 1);
+            state.smoothLevel = state.uptimeLevel + Math.min(0.999, (state.totalRuInception - prevCost) / (nextNineCost - prevCost));
+            let incidentDecayTotal = 0; state.incidents.forEach(inc => { inc.age += dt; incidentDecayTotal += inc.decay; });
+            state.visualNines = Math.min(99.9999999999, state.visualNines + (getNinesPercent(state.smoothLevel) - state.visualNines) * 0.12);
+            if (state.incidents.length > 0) state.visualNines = Math.max(90, state.visualNines - incidentDecayTotal * dt);
+            state.errorBudget = Math.min(100 + (state.directives.reliability * 10), state.errorBudget + (state.isFrozen ? 25 : 8) * (1 + (state.directives.reliability * 0.3)) * dt);
             if (state.errorBudget <= 0) { state.isFrozen = true; state.errorBudget = 0; }
-            const complexity = (state.upgrades.reduce((a, b) => a + b.count, 0) * 0.0001) + (state.uptimeLevel * 0.0015);
-            if (Math.random() < (0.003 + complexity) && !state.isFrozen) triggerIncident();
+            if (state.isFrozen && state.errorBudget >= 100) state.isFrozen = false;
+            if (Math.random() < (0.003 + (state.upgrades.reduce((a, b) => a + b.count, 0) * 0.0001) + (state.uptimeLevel * 0.0015)) * state.gameSpeed && !state.isFrozen) triggerIncident();
             state.shake *= 0.93;
         }
 
+        function formatReliability(val, lvl) {
+            if (lvl >= 24) return "OMNI"; if (lvl >= 18) return "VS " + lvl.toFixed(2);
+            if (lvl >= 12) return "OS " + lvl.toFixed(2); if (lvl >= 6) return "SS " + lvl.toFixed(2);
+            const p = Math.max(2, Math.floor(lvl) + 1);
+            let s = val.toFixed(p); return (s.startsWith("100") ? "99." + "9".repeat(p) : s) + "%";
+        }
+
         function drawBroccoli(x, y, lvl) {
-            const p = 6 + (lvl * 1.5);
+            const p = 6 + (lvl * 1.5); 
             const bob = Math.sin(state.animTimer * 1.5) * (10 + lvl * 2);
             const sway = Math.sin(state.animTimer * 0.8) * 0.02;
+            const isHighSpeed = state.gameSpeed === 100;
+            const isWarGames = state.isWarGames;
             ctx.save();
             ctx.translate(x + state.broccoliWander.x, y + state.broccoliWander.y + bob);
             ctx.rotate(sway);
-            const alpha = Math.max(0, 0.75 * (1 - (state.smoothLevel / 13)));
-            ctx.globalAlpha = state.isPaused ? alpha * 0.5 : alpha;
+            const alpha = Math.max(0, 0.75 * (1 - (state.smoothLevel / 15)));
+            ctx.globalAlpha = state.isPaused ? alpha * 0.5 : alpha; 
             const isPanicking = (state.incidents.length > 0 || state.isFrozen) && !state.isWarGames;
-            const treeColor = isPanicking ? COLORS.alert : COLORS.psycho;
-            ctx.shadowBlur = 20 + (lvl * 5);
+            const treeColor = isWarGames ? (Math.random() > 0.5 ? COLORS.alert : COLORS.prestige) : isPanicking ? COLORS.alert : COLORS.psycho;
+            ctx.shadowBlur = isHighSpeed ? 5 : 25 + (lvl * 5);
             ctx.shadowColor = treeColor;
-            ctx.fillStyle = COLORS.dim;
-            const trunkWidth = p * 4, trunkHeight = p * 8;
-            ctx.fillRect(-trunkWidth / 2, 0, trunkWidth, trunkHeight);
-            ctx.fillStyle = treeColor;
-            const radius = p * (8 + lvl * 1.2);
-            ctx.beginPath();
-            ctx.arc(0, -p * 2, radius, 0, Math.PI * 2);
-            ctx.fill();
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2;
-                const fx = Math.cos(angle) * radius * 0.8, fy = Math.sin(angle) * radius * 0.8 - p * 2;
-                ctx.beginPath(); ctx.arc(fx, fy, radius * 0.5, 0, Math.PI * 2); ctx.fill();
-            }
-            if (lvl >= 1) {
-                const faceY = -p * 3;
-                ctx.fillStyle = COLORS.white;
-                ctx.fillRect(-p * 4, faceY, p * 3, p); ctx.fillRect(p, faceY, p * 3, p);
-                ctx.fillStyle = isPanicking ? COLORS.alert : COLORS.prestige;
-                ctx.fillRect(-p * 2.5, faceY, p, p); ctx.fillRect(p * 1.5, faceY, p, p);
+            if (isHighSpeed || isWarGames) {
+                ctx.strokeStyle = treeColor; ctx.lineWidth = 1;
+                ctx.strokeRect(-p * 2, 0, p * 4, p * 8);
+                const radius = p * (8 + lvl * 1.2);
+                ctx.beginPath(); ctx.arc(0, -p*2, radius, 0, Math.PI * 2); ctx.stroke();
+                if (lvl >= 1) { ctx.strokeRect(-p*4, -p*3, p*3, p); ctx.strokeRect(p, -p*3, p*3, p); }
+            } else {
+                ctx.fillStyle = COLORS.dim; ctx.fillRect(-p*2, 0, p*4, p*8);
+                ctx.fillStyle = treeColor;
+                const radius = p * (8 + lvl * 1.2);
+                ctx.beginPath(); ctx.arc(0, -p*2, radius, 0, Math.PI * 2); ctx.fill();
+                for(let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    ctx.beginPath(); ctx.arc(Math.cos(angle)*radius*0.75, Math.sin(angle)*radius*0.75 - p*2, radius*0.55, 0, Math.PI * 2); ctx.fill();
+                }
+                if (lvl >= 1) {
+                    const faceY = -p*3;
+                    const isBlinking = Math.sin(state.animTimer * 2) > 0.98;
+                    ctx.fillStyle = COLORS.white;
+                    if (!isBlinking) {
+                        ctx.fillRect(-p*4, faceY, p*3, p); ctx.fillRect(p, faceY, p*3, p);    
+                        ctx.fillStyle = isPanicking ? COLORS.alert : COLORS.prestige;
+                        const pupilSize = isPanicking ? p * 1.5 : p;
+                        ctx.fillRect(-p*2.5 - (pupilSize-p)/2, faceY, pupilSize, p); ctx.fillRect(p*1.5 - (pupilSize-p)/2, faceY, pupilSize, p);
+                    } else {
+                        ctx.fillRect(-p*4, faceY + p/2, p*3, 2); ctx.fillRect(p, faceY + p/2, p*3, 2);
+                    }
+                }
             }
             ctx.restore();
         }
@@ -355,203 +420,160 @@
         function drawPulseBox(x, y, w, h, color) {
             ctx.save();
             const pulse = 0.5 + Math.sin(state.animTimer * 6) * 0.5;
-            ctx.strokeStyle = color;
-            ctx.globalAlpha = 0.2 + pulse * 0.6;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, y, w, h);
+            ctx.strokeStyle = color; ctx.globalAlpha = 0.2 + pulse * 0.6;
+            ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
             ctx.restore();
         }
 
         function draw() {
-            ctx.fillStyle = COLORS.bg;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = COLORS.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            state.buttons = [];
 
             if (state.wonGame) {
-                ctx.fillStyle = COLORS.phosphor;
-                ctx.textAlign = "center";
-                ctx.font = "bold 40px 'Courier New'";
-                ctx.fillText("SYSTEM STATUS: 1", canvas.width / 2, canvas.height / 2 - 40);
-                ctx.font = "20px 'Courier New'";
-                ctx.fillText("THE ONLY WINNING MOVE IS NOT TO DEPLOY.", canvas.width / 2, canvas.height / 2 + 20);
+                ctx.fillStyle = COLORS.phosphor; ctx.textAlign = "center";
+                ctx.font = "bold 30px 'Courier New'"; ctx.fillText("OPTIMIZED_GRIND_REPORT [T: " + Math.floor(state.stats.totalPlayTime) + "s]", canvas.width/2, 80);
+                state.stats.durations.forEach((d, i) => {
+                    const r = (d / (state.stats.totalPlayTime || 1) * 100).toFixed(1);
+                    ctx.font = "14px 'Courier New'"; ctx.fillText(`${MILESTONES[i].name}: ${Math.floor(d)}s (${r}%)`, canvas.width/2, 120 + i * 25);
+                });
+                const rX = canvas.width/2-150, rY = canvas.height-120;
+                drawPulseBox(rX, rY, 300, 50, COLORS.psycho);
+                ctx.fillStyle = COLORS.psycho; ctx.font = "bold 20px 'Courier New'";
+                ctx.fillText("[RELOAD_SYSTEM]", canvas.width/2, rY+32);
+                state.buttons.push({ x: rX, y: rY, w: 300, h: 50, onClick: () => location.reload() });
                 return;
             }
 
-            // GAME TITLE HEADER
-            ctx.save();
-            ctx.textAlign = "center";
-            ctx.fillStyle = COLORS.gray;
-            ctx.font = "14px 'Courier New'";
-            ctx.fillText(`100% :Go To space (v ${state.version})`, canvas.width / 2, 25);
-            ctx.restore();
+            if (state.isEnding) {
+                ctx.fillStyle = COLORS.phosphor;
+                ctx.textAlign = "left";
+                ctx.font = "20px 'Courier New'";
+                const startY = 100;
+                for (let i = 0; i <= state.endSeq.currentLineIdx; i++) {
+                    let lineText = state.endSeq.lines[i];
+                    if (!lineText && lineText !== "") continue;
+                    if (i === state.endSeq.currentLineIdx) {
+                        lineText = lineText.substring(0, state.endSeq.currentCharIdx);
+                        if (Math.floor(performance.now() / 250) % 2 === 0) lineText += "_";
+                    }
+                    ctx.fillText(lineText, 100, startY + i * 35);
+                }
+                return;
+            }
+
+            ctx.textAlign = "center"; ctx.fillStyle = COLORS.gray; ctx.font = "14px 'Courier New'";
+            ctx.fillText(`100% :Go To space (v ${state.version})${state.demo.active ? " [DEMO_ACTIVE]" : ""}`, canvas.width / 2, 25);
 
             if (state.isPaused) {
-                ctx.fillStyle = "rgba(0,0,0,0.85)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.save();
-                ctx.textAlign = "center";
-                ctx.fillStyle = COLORS.phosphor;
-                ctx.font = "bold 40px 'Courier New'";
+                ctx.fillStyle = "rgba(0,0,0,0.85)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.textAlign = "center"; ctx.fillStyle = COLORS.phosphor; ctx.font = "bold 40px 'Courier New'";
                 ctx.fillText("STANDUP IN PROGRESS", canvas.width / 2, canvas.height / 2);
-                ctx.font = "16px 'Courier New'";
-                ctx.fillText("SYSTEM WORK HALTED.", canvas.width / 2, canvas.height / 2 + 50);
-                ctx.restore();
             }
 
-            ctx.save();
-            if (state.shake > 1 && !state.isPaused) ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
-            ctx.strokeStyle = COLORS.dim;
-            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-            state.buttons = [];
-
-            // Architecture Directives
-            ctx.textAlign = "left";
-            ctx.font = "14px 'Courier New'";
-            ctx.fillStyle = COLORS.prestige;
+            ctx.save(); if (state.shake > 1 && !state.isPaused) ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake);
+            ctx.strokeStyle = COLORS.dim; ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+            ctx.textAlign = "left"; ctx.font = "14px 'Courier New'"; ctx.fillStyle = COLORS.prestige;
             ctx.fillText(`--- ARCHITECTURE DIRECTIVES [AP: ${state.ap}] ---`, 50, 45);
-
-            const dirs = ['velocity', 'reliability', 'observability'];
-            dirs.forEach((d, i) => {
+            ['velocity', 'reliability', 'observability'].forEach((d, i) => {
                 const x = 50 + (i * 200);
-                const canAfford = state.ap > 0;
-                if (canAfford) drawPulseBox(x - 5, 50, 185, 30, COLORS.prestige);
-                ctx.fillStyle = canAfford ? COLORS.prestige : COLORS.locked;
+                if (state.ap > 0) drawPulseBox(x - 5, 50, 185, 30, COLORS.prestige);
+                ctx.fillStyle = state.ap > 0 ? COLORS.prestige : COLORS.locked;
                 ctx.fillText(`[+] ${d.toUpperCase()}: ${state.directives[d]}`, x, 70);
-                state.buttons.push({ x: x, y: 55, w: 180, h: 25, onClick: () => { if (state.ap > 0) { state.ap--; state.directives[d]++; addTerminalLine(`DIRECTIVE UPDATED: ${d.toUpperCase()}.`); } } });
+                state.buttons.push({ x: x, y: 55, w: 180, h: 25, onClick: () => { if (state.ap > 0) { state.ap--; state.directives[d]++; } } });
             });
-
-            // Center Panel
-            ctx.textAlign = "center";
-            const milestone = MILESTONES[state.uptimeLevel] || MILESTONES[MILESTONES.length - 1];
-            const nextMilestone = MILESTONES[state.uptimeLevel + 1];
-            ctx.font = "16px 'Courier New'";
-            ctx.fillStyle = COLORS.dim;
+            ctx.textAlign = "center"; ctx.font = "16px 'Courier New'"; ctx.fillStyle = COLORS.dim;
             ctx.fillText(`INCEPTION_CRU: ${Math.floor(state.totalRuInception)}`, canvas.width / 2, 140);
             ctx.fillStyle = state.isWarGames ? COLORS.alert : COLORS.phosphor;
-            ctx.font = "bold 58px 'Courier New'";
-            ctx.fillText(`STAGE: ${milestone.name}`, canvas.width / 2, 195);
-            ctx.font = "bold 72px 'Courier New'";
-            const precision = Math.max(6, state.uptimeLevel + 2);
-            ctx.fillText(state.visualNines.toFixed(precision) + "%", canvas.width / 2, 260);
-
+            ctx.font = "bold 58px 'Courier New'"; ctx.fillText(`STAGE: ${MILESTONES[state.uptimeLevel].name}`, canvas.width / 2, 195);
+            ctx.font = "bold 72px 'Courier New'"; ctx.fillText(formatReliability(state.visualNines, state.smoothLevel), canvas.width / 2, 260);
             if (state.isWarGames) {
-                drawPulseBox(canvas.width / 2 - 130, 85, 260, 45, COLORS.alert);
-                ctx.fillStyle = COLORS.alert;
-                ctx.font = "bold 20px 'Courier New'";
+                drawPulseBox(canvas.width/2-130, 85, 260, 45, COLORS.alert);
+                ctx.fillStyle = COLORS.alert; ctx.font = "bold 20px 'Courier New'";
                 ctx.fillText("[!] ABORT_SIMULATION", canvas.width / 2, 110);
-                state.buttons.push({ x: canvas.width / 2 - 125, y: 90, w: 250, h: 40, onClick: () => { state.wonGame = true; } });
-            } else if (nextMilestone) {
-                const cost = Math.pow(10, state.uptimeLevel + 1.2);
-                const canAfford = state.ruForLevel >= cost;
-                if (canAfford) drawPulseBox(canvas.width / 2 - 200, 85, 400, 40, COLORS.phosphor);
-                ctx.fillStyle = canAfford ? COLORS.phosphor : COLORS.dim;
-                ctx.font = "16px 'Courier New'";
-                ctx.fillText(`NEXT: [${nextMilestone.name}] REQ: ${Math.floor(cost)} RU`, canvas.width / 2, 110);
-                state.buttons.push({ x: canvas.width / 2 - 200, y: 85, w: 400, h: 40, onClick: () => { if (!state.isPaused && state.ruForLevel >= cost) { state.ruForLevel -= cost; state.uptimeLevel++; addTerminalLine(`UNLOCKED: ${nextMilestone.name}.`); if (nextMilestone.name === "WAR_GAMES") state.isWarGames = true; } } });
-            }
-
-            if (!state.isWarGames) {
-                const apMulti = 1 + (state.directives.velocity * 0.5);
-                let passiveRate = 0;
-                state.upgrades.forEach(u => passiveRate += u.count * u.ruPerSec * apMulti);
-                ctx.font = "18px 'Courier New'";
-                ctx.fillStyle = COLORS.phosphor;
-                ctx.fillText(`RELIABILITY UNITS: ${Math.floor(state.ru)} | THROUGHPUT: ${passiveRate.toFixed(1)} RU/s`, canvas.width / 2, 310);
-                ctx.fillStyle = COLORS.prestige;
-                ctx.fillText(`LOGIC FRAGMENTS: ${state.logicFragments}`, canvas.width / 2, 335);
-            }
-
-            const bW = 480, bX = canvas.width / 2 - bW / 2, bY = 360;
-            ctx.strokeStyle = COLORS.dim;
-            ctx.strokeRect(bX, bY, bW, 22);
-            ctx.fillStyle = state.isFrozen ? COLORS.alert : COLORS.phosphor;
-            ctx.fillRect(bX + 4, bY + 4, (bW - 8) * (state.errorBudget / (100 + state.directives.reliability * 10)), 14);
-
-            // Infrastructure Panel
-            ctx.save();
-            ctx.textAlign = "left";
-            ctx.fillStyle = COLORS.dim;
-            ctx.fillText("--- INFRASTRUCTURE (SCROLL) ---", 50, 500);
-            const scrollAreaY = 515;
-            ctx.beginPath();
-            ctx.rect(40, scrollAreaY, 450, state.infraHeight);
-            ctx.clip();
-            const apMulti = 1 + (state.directives.velocity * 0.5);
-            state.upgrades.forEach((u, i) => {
-                const y = scrollAreaY + 30 + i * 55 + state.infraScroll;
-                const unlocked = state.uptimeLevel >= u.req;
-                const aff = state.ru >= u.cost;
-                if (unlocked && !state.isWarGames) {
-                    if (aff) drawPulseBox(45, y - 25, 420, 40, COLORS.phosphor);
-                    ctx.fillStyle = aff ? COLORS.phosphor : COLORS.dim;
-                    const contribution = (u.count * u.ruPerSec * apMulti).toFixed(1);
-                    ctx.fillText(`[${u.count}] ${u.name} (${Math.floor(u.cost)} RU) | +${contribution} RU/s`, 50, y);
-                    if (y > scrollAreaY && y < scrollAreaY + state.infraHeight) {
-                        state.buttons.push({ x: 50, y: y - 10, w: 420, h: 35, onClick: () => { if (!state.isPaused && state.ru >= u.cost) { state.ru -= u.cost; u.count++; u.cost *= 1.8; addTerminalLine(`PROVISIONED: ${u.name}`); } } });
-                    }
-                } else if (!state.isWarGames) {
-                    ctx.fillStyle = COLORS.locked;
-                    ctx.fillText(`[LOCKED] REQ: ${MILESTONES[u.req].name}`, 50, y);
-                }
-            });
-            ctx.restore();
-
-            // Self Healing Panel
-            ctx.textAlign = "center";
-            ctx.fillStyle = COLORS.dim;
-            const rightPanelX = canvas.width - 250;
-            ctx.fillText("--- SELF-HEALING MODULES ---", rightPanelX, 500);
-            const ahUnlocked = state.uptimeLevel >= 4;
-            if (ahUnlocked) {
-                const affAh = state.logicFragments >= state.autoHeal.cost;
-                if (affAh) drawPulseBox(rightPanelX - 105, 505, 210, 50, COLORS.prestige);
-                ctx.fillStyle = affAh ? COLORS.prestige : COLORS.dim;
-                ctx.fillText(`[LVL ${state.autoHeal.level}] AUTO-REMEDIATOR`, rightPanelX, 530);
-                ctx.font = "12px 'Courier New'";
-                ctx.fillText(`COST: ${state.autoHeal.cost} FRAGMENTS`, rightPanelX, 545);
-                state.buttons.push({ x: rightPanelX - 100, y: 515, w: 200, h: 40, onClick: () => { if (state.logicFragments >= state.autoHeal.cost) { state.logicFragments -= state.autoHeal.cost; state.autoHeal.level++; state.autoHeal.power += 0.2; state.autoHeal.cost = Math.floor(state.autoHeal.cost * 2.2); addTerminalLine("UPGRADED AUTO-REMEDIATION."); } } });
+                state.buttons.push({ x: canvas.width/2 - 125, y: 85, w: 250, h: 50, onClick: () => startEndingSequence() });
             } else {
-                ctx.fillStyle = COLORS.locked;
-                ctx.fillText("[LOCKED] REQ: MONITORING", rightPanelX, 530);
+                const nextCost = getNextStageCost(state.uptimeLevel);
+                if (state.totalRuInception >= nextCost) drawPulseBox(canvas.width/2 - 200, 85, 400, 40, COLORS.phosphor);
+                ctx.fillStyle = state.totalRuInception >= nextCost ? COLORS.phosphor : COLORS.dim;
+                ctx.fillText(`NEXT: [${MILESTONES[state.uptimeLevel+1].name}] REQ: ${Math.floor(nextCost)} CRU`, canvas.width / 2, 110);
+                state.buttons.push({ x: canvas.width/2 - 200, y: 85, w: 400, h: 40, onClick: () => { if (!state.isPaused && state.totalRuInception >= nextCost) { state.uptimeLevel++; recordStageChange(); if (MILESTONES[state.uptimeLevel].name === "WAR_GAMES") state.isWarGames = true; } } });
             }
-
-            // Global Post-Mortem
+            if (!state.isWarGames) {
+                const m = (1 + (state.directives.velocity * 0.5));
+                let pr = 0; state.upgrades.forEach(u => pr += u.count * u.ruPerSec * m);
+                ctx.font = "18px 'Courier New'"; ctx.fillStyle = COLORS.phosphor;
+                ctx.fillText(`RU: ${Math.floor(state.ru)} | TP: ${pr.toFixed(1)} RU/s`, canvas.width / 2, 310);
+            }
+            const bX = canvas.width / 2 - 240, bY = 360;
+            ctx.strokeStyle = COLORS.dim; ctx.strokeRect(bX, bY, 480, 22);
+            ctx.fillStyle = state.isFrozen ? COLORS.alert : COLORS.phosphor;
+            ctx.fillRect(bX+4, bY+4, 472 * (state.errorBudget / (100 + state.directives.reliability * 10)), 14);
+            const box = state.infraBox;
+            ctx.save(); ctx.textAlign = "left"; ctx.fillStyle = COLORS.dim; ctx.fillText("--- INFRA-GRID TERMINAL ---", box.x, box.y - 10);
+            ctx.strokeStyle = COLORS.dim; ctx.strokeRect(box.x - 5, box.y - 5, box.w + 10, box.h + 10);
+            ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
+            state.upgrades.forEach((u, i) => {
+                const iY = box.y + 30 + i * 55 + state.infraScroll;
+                const unlocked = state.uptimeLevel >= u.req;
+                if (unlocked && !state.isWarGames) {
+                    if (state.ru >= u.cost) drawPulseBox(box.x + 5, iY - 25, box.w - 40, 40, COLORS.phosphor);
+                    ctx.fillStyle = state.ru >= u.cost ? COLORS.phosphor : COLORS.dim;
+                    ctx.fillText(`[${u.count}] ${u.name} (${Math.floor(u.cost)} RU)`, box.x + 10, iY);
+                    if (iY > box.y && iY < box.y + box.h) state.buttons.push({ x: box.x, y: iY - 30, w: box.w - 30, h: 40, onClick: () => { if (!state.isPaused && state.ru >= u.cost) { state.ru -= u.cost; u.count++; u.cost *= 2.3; } } });
+                } else if (!state.isWarGames) { ctx.fillStyle = COLORS.locked; ctx.fillText(`[LOCKED] REQ: ${MILESTONES[u.req].name}`, box.x + 10, iY); }
+            }); ctx.restore();
+            const rX = canvas.width - 250, uiY = canvas.height - 300;
+            ctx.textAlign = "center"; ctx.fillStyle = COLORS.dim; ctx.fillText("--- SELF-HEALING ---", rX, uiY);
+            if (state.uptimeLevel >= 4 && !state.isWarGames) {
+                if (state.logicFragments >= state.autoHeal.cost) drawPulseBox(rX - 105, uiY + 5, 210, 50, COLORS.prestige);
+                ctx.fillStyle = state.logicFragments >= state.autoHeal.cost ? COLORS.prestige : COLORS.dim;
+                ctx.fillText(`[LVL ${state.autoHeal.level}] AUTO-REMEDIATOR`, rX, uiY + 30);
+                state.buttons.push({ x: rX - 100, y: uiY + 15, w: 200, h: 40, onClick: () => { if (state.logicFragments >= state.autoHeal.cost) { state.logicFragments -= state.autoHeal.cost; state.autoHeal.level++; state.autoHeal.power += 0.2; state.autoHeal.cost = Math.floor(state.autoHeal.cost * 2.2); } } });
+            }
             if (state.uptimeLevel >= 3 && !state.isWarGames) {
-                const prestigeY = 650;
-                drawPulseBox(rightPanelX - 200, prestigeY - 5, 400, 40, COLORS.prestige);
-                ctx.fillStyle = COLORS.prestige;
-                ctx.fillText(`[!] GLOBAL POST-MORTEM (+${Math.max(1, state.uptimeLevel - 2) * 5} AP)`, rightPanelX, prestigeY + 20);
-                state.buttons.push({ x: rightPanelX - 200, y: prestigeY, w: 400, h: 30, onClick: prestige });
+                const pY = uiY + 120; drawPulseBox(rX - 200, pY - 5, 400, 40, COLORS.prestige);
+                ctx.fillStyle = COLORS.prestige; ctx.fillText(`[!] GLOBAL POST-MORTEM`, rX, pY + 20);
+                state.buttons.push({ x: rX - 200, y: pY, w: 400, h: 30, onClick: prestige });
             }
-
-            // Pause Button
-            const pauseText = state.isPaused ? "[RESUME_ON_CALL]" : "[INITIATE_STANDUP]";
-            ctx.textAlign = "right";
-            ctx.fillStyle = COLORS.white;
-            if (state.isPaused) drawPulseBox(canvas.width - 250, 30, 200, 30, COLORS.white);
-            ctx.fillText(pauseText, canvas.width - 50, 45);
-            state.buttons.push({ x: canvas.width - 250, y: 30, w: 200, h: 30, onClick: () => { state.isPaused = !state.isPaused; } });
-
-            drawBroccoli(canvas.width - 250, canvas.height - 350, state.uptimeLevel);
-            state.incidents.forEach(inc => {
-                ctx.save();
-                let r = inc.radius;
-                if (inc.behavior === "PULSE") r = inc.radius * (1 + Math.sin(state.animTimer * 10) * 0.2);
-                else if (inc.behavior === "SHAKE") ctx.translate(Math.random() * 6 - 3, Math.random() * 6 - 3);
-                ctx.strokeStyle = COLORS.alert; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.arc(inc.x, inc.y, r, 0, Math.PI * 2); ctx.stroke();
-                ctx.fillStyle = COLORS.alert; ctx.textAlign = "center";
-                ctx.font = "bold 13px 'Courier New'"; ctx.fillText(inc.name, inc.x, inc.y - 4);
-                ctx.restore();
-            });
-            ctx.textAlign = "left"; ctx.fillStyle = COLORS.dim; ctx.font = "13px 'Courier New'";
-            state.terminalLines.forEach((l, i) => ctx.fillText(l, canvas.width - 450, canvas.height - 180 + i * 18));
-            ctx.restore();
+            ctx.textAlign = "right"; ctx.fillStyle = COLORS.white;
+            ctx.fillText(state.isPaused ? "[RESUME]" : "[STANDUP]", canvas.width - 50, 45);
+            state.buttons.push({ x: canvas.width - 250, y: 30, w: 200, h: 30, onClick: () => state.isPaused = !state.isPaused });
+            ctx.fillStyle = state.debugMenuOpen ? COLORS.psycho : COLORS.gray;
+            ctx.fillText("[DEBUG_SHELL]", canvas.width - 50, 80);
+            state.buttons.push({ x: canvas.width - 250, y: 65, w: 200, h: 30, onClick: () => { state.debugMenuOpen = !state.debugMenuOpen; state.stageSelectOpen = false; } });
+            if (state.debugMenuOpen) {
+                const mX = canvas.width - 260, mY = 100, mW = 220, mH = 180;
+                ctx.fillStyle = COLORS.bg; ctx.strokeStyle = COLORS.psycho;
+                ctx.fillRect(mX, mY, mW, mH); ctx.strokeRect(mX, mY, mW, mH);
+                ctx.fillStyle = state.demo.active ? COLORS.psycho : COLORS.white; ctx.textAlign = "center";
+                ctx.fillText(state.demo.active ? "STOP_DEMO" : "START_DEMO", mX + mW/2, mY + 30);
+                state.buttons.push({ x: mX + 10, y: mY + 10, w: mW - 20, h: 30, onClick: () => { state.demo.active = !state.demo.active; } });
+                [1, 10, 100].forEach((s, i) => {
+                    const x = mX + 40 + i * 70; ctx.fillStyle = state.gameSpeed === s ? COLORS.phosphor : COLORS.gray;
+                    ctx.fillText(`${s}x`, x, mY + 70);
+                    state.buttons.push({ x: x - 30, y: mY + 50, w: 60, h: 30, onClick: () => state.gameSpeed = s });
+                });
+                ctx.fillStyle = state.stageSelectOpen ? COLORS.psycho : COLORS.white;
+                ctx.fillText("JUMP_TO_STAGE", mX + mW/2, mY + 110);
+                state.buttons.push({ x: mX + 10, y: mY + 90, w: mW - 20, h: 30, onClick: () => state.stageSelectOpen = !state.stageSelectOpen });
+                if (state.stageSelectOpen) {
+                    const lX = mX - 220, lW = 210, lH = 400;
+                    ctx.fillStyle = COLORS.bg; ctx.strokeStyle = COLORS.psycho;
+                    ctx.fillRect(lX, mY, lW, lH); ctx.strokeRect(lX, mY, lW, lH);
+                    MILESTONES.forEach((m, i) => {
+                        ctx.fillStyle = state.uptimeLevel === i ? COLORS.phosphor : COLORS.white; ctx.font = "10px 'Courier New'";
+                        ctx.fillText(`${i}: ${m.name}`, lX + lW/2, mY + 25 + i * 28);
+                        state.buttons.push({ x: lX + 5, y: mY + 10 + i * 28, w: lW - 10, h: 25, onClick: () => jumpToStage(i) });
+                    });
+                }
+            }
+            drawBroccoli(canvas.width - 250, canvas.height - 450, state.uptimeLevel);
+            ctx.textAlign = "left"; ctx.fillStyle = COLORS.dim; ctx.font = "12px 'Courier New'";
+            state.terminalLines.forEach((l, i) => ctx.fillText(l, canvas.width - 400, canvas.height - 80 + i * 18)); ctx.restore();
         }
 
         function loop() { update(); draw(); requestAnimationFrame(loop); }
         loop();
     </script>
 </body>
-
 </html>
