@@ -1,4 +1,12 @@
 # go-to-production: A Cloud-Native Journey
+<br />
+
+[![Build and Test](https://github.com/stevemcghee/go-to-production/actions/workflows/build-test.yml/badge.svg)](https://github.com/stevemcghee/go-to-production/actions/workflows/build-test.yml)
+[![Deploy to GitHub Pages](https://github.com/stevemcghee/go-to-production/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/stevemcghee/go-to-production/actions/workflows/deploy-pages.yml)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/stevemcghee/go-to-production)](https://github.com/stevemcghee/go-to-production)
+[![Go Report Card](https://goreportcard.com/badge/github.com/stevemcghee/go-to-production)](https://goreportcard.com/report/github.com/stevemcghee/go-to-production)
+![GitHub license](https://img.shields.io/github/license/stevemcghee/go-to-production)
+
 
 > **Note:** This repository focuses on the wrapper, not the candy. The application code is deliberately minimal to highlight the **Infrastructure, Security, and Observability** layers required for production.
 
