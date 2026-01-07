@@ -6,6 +6,12 @@
 
 This repository serves as a reference implementation for modern cloud-native practices on Google Cloud Platform (GCP). It evolves from a simple local Docker setup to a highly available, secure, and observable system running on GKE.
 
+## 🚀 Interactive SRE Simulation
+
+Try the **[100 - Go To Space](https://stevemcghee.github.io/go-to-production/)** interactive simulation! 
+
+This game illustrates the concepts of SLOs, Error Budgets, and Infrastructure automation featured in this repository.
+
 ## How It Works: Time Travel
 
 Don't just see the finish line—see the journey. This repo uses **Git Tags** to let you step through the evolution of a service.
