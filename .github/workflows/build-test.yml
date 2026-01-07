@@ -39,22 +39,37 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Google Auth
+      if: github.actor != 'dependabot[bot]'
       id: auth
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
     - name: Set up Cloud SDK
+      if: github.actor != 'dependabot[bot]'
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Get Project ID
+      if: github.actor != 'dependabot[bot]'
       id: project
       run: echo "id=$(gcloud config get-value project)" >> $GITHUB_OUTPUT
 
     - name: Configure Docker to push to Artifact Registry
+      if: github.actor != 'dependabot[bot]'
       run: gcloud auth configure-docker ${{ vars.GCR_HOSTNAME }}
 
-    - name: Build and Push Docker image
+    - name: Build Docker image
+      env:
+        IMAGE_NAME: todo-app-go
+        IMAGE_TAG: ${{ github.sha }}
+        GCR_HOSTNAME: ${{ vars.GCR_HOSTNAME || 'gcr.io' }}
+        GAR_REPOSITORY: todo-app-go
+        GCP_PROJECT: ${{ steps.project.outputs.id || 'placeholder' }}
+      run: |
+        docker build -t $GCR_HOSTNAME/$GCP_PROJECT/$GAR_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG .
+
+    - name: Push Docker image
+      if: github.actor != 'dependabot[bot]'
       env:
         IMAGE_NAME: todo-app-go
         IMAGE_TAG: ${{ github.sha }}
@@ -62,13 +77,13 @@ jobs:
         GAR_REPOSITORY: todo-app-go
         GCP_PROJECT: ${{ steps.project.outputs.id }}
       run: |
-        docker build -t $GCR_HOSTNAME/$GCP_PROJECT/$GAR_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG .
         docker push $GCR_HOSTNAME/$GCP_PROJECT/$GAR_REPOSITORY/$IMAGE_NAME:$IMAGE_TAG
 
     - name: Install Cosign
       uses: sigstore/cosign-installer@v3.5.0
 
     - name: Sign image with a keyless signature
+      if: github.actor != 'dependabot[bot]'
       env:
         IMAGE_NAME: todo-app-go
         IMAGE_TAG: ${{ github.sha }}
